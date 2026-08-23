@@ -136,20 +136,20 @@ export default function HomeView({
           {/* Meeting Room Today */}
           <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/70">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 font-extrabold text-slate-900 text-base">
-                <span className="w-3 h-3 rounded-full bg-blue-600"></span>
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                 회의실 ({meetingToday.length}건)
               </div>
               <button
                 onClick={() => onSelectSpace('meeting-room')}
-                className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline"
               >
                 회의실 캘린더 보기 &rarr;
               </button>
             </div>
 
             {meetingToday.length === 0 ? (
-              <div className="py-8 text-center text-sm text-slate-400 bg-white/70 rounded-xl border border-dashed border-slate-200 font-medium">
+              <div className="py-8 text-center text-xs sm:text-sm text-slate-400 bg-white/70 rounded-xl border border-dashed border-slate-200 font-normal">
                 오늘 등록된 회의실 예약이 없습니다.
               </div>
             ) : (
@@ -158,13 +158,13 @@ export default function HomeView({
                   <div
                     key={res.id}
                     onClick={() => onSelectReservation(res)}
-                    className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-xs transition-all cursor-pointer flex flex-wrap sm:flex-nowrap items-center gap-3"
+                    className="p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs hover:border-blue-300 hover:shadow-xs transition-all cursor-pointer flex flex-wrap sm:flex-nowrap items-center gap-3"
                   >
-                    <span className="flex items-center gap-1.5 font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-lg border border-blue-100 text-sm shrink-0">
-                      <Clock className="w-4 h-4 text-blue-600" />
+                    <span className="flex items-center gap-1.5 font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-lg border border-blue-100 text-xs sm:text-sm shrink-0">
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
                       {res.startTime} ~ {res.endTime}
                     </span>
-                    <span className="text-slate-800 font-bold text-sm sm:text-base truncate flex-1 min-w-0">
+                    <span className="text-slate-700 font-medium text-sm sm:text-base truncate flex-1 min-w-0">
                       {res.purpose}
                     </span>
                   </div>
@@ -176,20 +176,20 @@ export default function HomeView({
           {/* Audiovisual Room Today */}
           <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/70">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 font-extrabold text-slate-900 text-base">
-                <span className="w-3 h-3 rounded-full bg-indigo-600"></span>
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
                 시청각실 ({audioToday.length}건)
               </div>
               <button
                 onClick={() => onSelectSpace('audiovisual-room')}
-                className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+                className="text-xs sm:text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
               >
                 시청각실 캘린더 보기 &rarr;
               </button>
             </div>
 
             {audioToday.length === 0 ? (
-              <div className="py-8 text-center text-sm text-slate-400 bg-white/70 rounded-xl border border-dashed border-slate-200 font-medium">
+              <div className="py-8 text-center text-xs sm:text-sm text-slate-400 bg-white/70 rounded-xl border border-dashed border-slate-200 font-normal">
                 오늘 등록된 시청각실 예약이 없습니다.
               </div>
             ) : (
@@ -198,13 +198,13 @@ export default function HomeView({
                   <div
                     key={res.id}
                     onClick={() => onSelectReservation(res)}
-                    className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-indigo-300 hover:shadow-xs transition-all cursor-pointer flex flex-wrap sm:flex-nowrap items-center gap-3"
+                    className="p-3.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs hover:border-indigo-300 hover:shadow-xs transition-all cursor-pointer flex flex-wrap sm:flex-nowrap items-center gap-3"
                   >
-                    <span className="flex items-center gap-1.5 font-bold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg border border-indigo-100 text-sm shrink-0">
-                      <Clock className="w-4 h-4 text-indigo-600" />
+                    <span className="flex items-center gap-1.5 font-semibold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg border border-indigo-100 text-xs sm:text-sm shrink-0">
+                      <Clock className="w-3.5 h-3.5 text-indigo-600" />
                       {res.startTime} ~ {res.endTime}
                     </span>
-                    <span className="text-slate-800 font-bold text-sm sm:text-base truncate flex-1 min-w-0">
+                    <span className="text-slate-700 font-medium text-sm sm:text-base truncate flex-1 min-w-0">
                       {res.purpose}
                     </span>
                   </div>
@@ -217,34 +217,34 @@ export default function HomeView({
 
       {/* User Guides & Rules */}
       <section className="bg-slate-100/60 rounded-3xl border border-slate-200/80 p-6 sm:p-8">
-        <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <h3 className="text-sm sm:text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
           <Info className="w-5 h-5 text-blue-600" />
           공간 이용 및 예약 안내 수칙
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-slate-600">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <h4 className="font-bold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
+            <h4 className="font-semibold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 1. 비밀번호 보관
             </h4>
-            <p className="text-slate-500 leading-relaxed text-xs">
+            <p className="text-slate-500 leading-relaxed text-xs font-normal">
               예약 시 설정한 4자리 이상 비밀번호는 예약 수정 및 취소 시 본인 확인용으로 사용됩니다.
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <h4 className="font-bold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
+            <h4 className="font-semibold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 2. 중복 예약 방지
             </h4>
-            <p className="text-slate-500 leading-relaxed text-xs">
+            <p className="text-slate-500 leading-relaxed text-xs font-normal">
               동일 공간의 겹치는 시간대는 시스템에서 실시간으로 자동 차단되므로 안심하고 예약하실 수 있습니다.
             </p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <h4 className="font-bold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
+            <h4 className="font-semibold text-slate-900 mb-1.5 flex items-center gap-1.5 text-xs sm:text-sm">
               <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 3. 사용 후 정리 정돈
             </h4>
-            <p className="text-slate-500 leading-relaxed text-xs">
+            <p className="text-slate-500 leading-relaxed text-xs font-normal">
               기기 전원(빔프로젝터, 음향앰프 등)과 냉난방기 소등, 퇴실 시 출입문 잠금을 준수해 주시기 바랍니다.
             </p>
           </div>

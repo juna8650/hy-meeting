@@ -54,43 +54,43 @@ export default function SpaceCard({ space, todayReservations, onSelect }: SpaceC
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-600 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-xs sm:text-sm font-medium text-slate-500 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
                   {space.location}
                 </span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1.5">{space.name}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{space.name}</h3>
             </div>
           </div>
- 
-          <span className="text-sm sm:text-base font-bold text-slate-800 bg-slate-100 px-3.5 py-2 rounded-2xl flex items-center gap-2 border border-slate-200">
-            <Users className="w-4.5 h-4.5 text-slate-600" />
+
+          <span className="text-xs sm:text-sm font-medium text-slate-600 bg-slate-100/90 px-3 py-1.5 rounded-xl flex items-center gap-1.5 border border-slate-200/80">
+            <Users className="w-4 h-4 text-slate-500" />
             {space.capacity}
           </span>
         </div>
- 
+
         {/* Short Description */}
-        <p className="text-slate-700 text-sm sm:text-base leading-relaxed mb-6 font-semibold">
+        <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-6 font-normal">
           {space.shortDescription}
         </p>
- 
+
         {/* Space Specs & Operating Hours */}
-        <div className="bg-slate-50/90 rounded-2xl p-5 border border-slate-200/80 mb-6 space-y-3.5">
-          <div className="flex items-center justify-between text-sm sm:text-base">
-            <span className="text-slate-600 flex items-center gap-2 font-semibold">
-              <Clock className="w-4.5 h-4.5 text-slate-400" /> 운영 시간
+        <div className="bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-200/70 mb-6 space-y-3">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-slate-500 flex items-center gap-2 font-medium">
+              <Clock className="w-4 h-4 text-slate-400" /> 운영 시간
             </span>
-            <span className="font-semibold text-slate-800">
+            <span className="font-medium text-slate-700">
               {space.openTime} ~ {space.closeTime}
             </span>
           </div>
- 
-          <div className="flex items-center justify-between text-sm sm:text-base">
-            <span className="text-slate-600 flex items-center gap-2 font-semibold">
-              <Calendar className="w-4.5 h-4.5 text-slate-400" /> 오늘 예약 현황
+
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-slate-500 flex items-center gap-2 font-medium">
+              <Calendar className="w-4 h-4 text-slate-400" /> 오늘 예약 현황
             </span>
             <span
-              className={`font-semibold text-sm px-3 py-1 rounded-full border ${
+              className={`font-medium text-xs sm:text-sm px-2.5 py-0.5 rounded-full border ${
                 todayReservations.length > 0
                   ? 'bg-amber-50 text-amber-800 border-amber-200'
                   : 'bg-emerald-50 text-emerald-800 border-emerald-200'
@@ -102,17 +102,17 @@ export default function SpaceCard({ space, todayReservations, onSelect }: SpaceC
             </span>
           </div>
         </div>
- 
+
         {/* Equipment Features */}
         <div className="mb-6 flex-1">
-          <h4 className="text-xs sm:text-sm font-extrabold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-slate-500" /> 주요 시설 및 구비 물품
+          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-slate-400" /> 주요 시설 및 구비 물품
           </h4>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {space.equipment.map((eq, i) => (
-              <li key={i} className="text-sm sm:text-base text-slate-700 font-semibold flex items-start gap-2">
+              <li key={i} className="text-xs sm:text-sm text-slate-600 font-normal flex items-start gap-2">
                 <CheckCircle2
-                  className={`w-4 h-4 mt-0.5 shrink-0 ${
+                  className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${
                     isMeeting ? 'text-blue-500' : 'text-indigo-500'
                   }`}
                 />
@@ -126,7 +126,7 @@ export default function SpaceCard({ space, todayReservations, onSelect }: SpaceC
         <button
           id={`select-space-btn-${space.id}`}
           onClick={onSelect}
-          className={`w-full py-3.5 px-6 rounded-2xl font-bold text-white shadow-sm flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-200 active:scale-[0.99] ${
+          className={`w-full py-3.5 px-6 rounded-2xl font-semibold text-white shadow-xs flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-200 active:scale-[0.99] ${
             isMeeting
               ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-blue-500/20 hover:shadow-blue-500/30'
               : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-indigo-500/20 hover:shadow-indigo-500/30'
