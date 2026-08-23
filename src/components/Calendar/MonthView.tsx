@@ -182,8 +182,8 @@ export default function MonthView({
                 {/* Cell Body: Blocked reason or Reservation chips */}
                 <div className="flex-1 space-y-1 overflow-y-auto max-h-[90px] sm:max-h-[110px] scrollbar-none flex flex-col gap-1">
                   {blocked && blocked.type === 'holiday' && (
-                    <div className="p-1 px-1.5 rounded-lg border-2 border-rose-400 bg-rose-50 text-rose-600 text-xs sm:text-sm font-extrabold text-center shadow-3xs">
-                      <span className="font-extrabold">{blocked.reason}</span>
+                    <div className="p-1 px-1.5 rounded-lg border border-rose-300 bg-rose-50 text-rose-600 text-xs sm:text-sm font-semibold text-center shadow-3xs">
+                      <span className="font-semibold">{blocked.reason}</span>
                     </div>
                   )}
 
@@ -203,18 +203,18 @@ export default function MonthView({
                             e.stopPropagation();
                             onSelectReservation(res);
                           }}
-                          className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg text-xs sm:text-sm font-bold border transition-all cursor-pointer shadow-3xs ${
+                          className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg text-xs sm:text-sm border transition-all cursor-pointer shadow-3xs ${
                             isMeeting
-                              ? 'bg-blue-100 text-blue-950 border-blue-400 hover:bg-blue-200 hover:border-blue-500 hover:shadow-sm'
-                              : 'bg-indigo-100 text-indigo-950 border-indigo-400 hover:bg-indigo-200 hover:border-indigo-500 hover:shadow-sm'
+                              ? 'bg-blue-50/90 text-blue-950 border-blue-200 hover:bg-blue-100 hover:border-blue-300 hover:shadow-xs'
+                              : 'bg-indigo-50/90 text-indigo-950 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 hover:shadow-xs'
                           }`}
                           title={`${res.startTime}~${res.endTime} ${res.userName} (${res.purpose})`}
                         >
-                          <div className="font-extrabold text-[10px] sm:text-xs text-slate-950 whitespace-nowrap overflow-visible">
+                          <div className="font-medium text-[10px] sm:text-xs text-slate-700 whitespace-nowrap overflow-visible">
                             {res.startTime}~{res.endTime}
                           </div>
                           {!showOnlyTime && (
-                            <div className="text-slate-800 text-[10px] sm:text-xs font-bold truncate hidden sm:block mt-0.5 opacity-90">
+                            <div className="text-slate-600 text-[10px] sm:text-xs font-normal truncate hidden sm:block mt-0.5 opacity-90">
                               {res.purpose}
                             </div>
                           )}

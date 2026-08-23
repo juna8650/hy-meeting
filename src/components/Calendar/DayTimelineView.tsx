@@ -70,6 +70,12 @@ export default function DayTimelineView({
 
   const isMeeting = space.id === 'meeting-room';
 
+  // Check if selectedDate is Sunday or a registered Holiday
+  const [y, m, d] = selectedDate.split('-').map(Number);
+  const dayOfWeek = new Date(y, m - 1, d).getDay();
+  const isHoliday = dayOfWeek === 0 || (blocked && blocked.type === 'holiday');
+  const isSat = dayOfWeek === 6;
+
   return (
     <div className="space-y-4">
       {/* Day Header Navigation */}
@@ -83,8 +89,21 @@ export default function DayTimelineView({
             >
               <ChevronLeft className="w-4 h-4 sm:w-5 h-5" />
             </button>
-            <h3 className="text-xs sm:text-base md:text-lg font-bold text-slate-900 px-2 sm:px-4 tracking-tight shrink-0">
+            <h3
+              className={`text-xs sm:text-base md:text-lg font-bold px-2 sm:px-4 tracking-tight shrink-0 ${
+                isHoliday
+                  ? 'text-rose-600'
+                  : isSat
+                  ? 'text-blue-600'
+                  : 'text-slate-900'
+              }`}
+            >
               {formatKoreanDate(selectedDate, true)}
+              {blocked && blocked.type === 'holiday' && (
+                <span className="ml-1.5 text-xs font-semibold px-2 py-0.5 bg-rose-50 text-rose-600 rounded-lg border border-rose-200">
+                  {blocked.reason}
+                </span>
+              )}
             </h3>
             <button
               onClick={handleNextDay}
@@ -192,39 +211,36 @@ export default function DayTimelineView({
                 {occupyingRes ? (
                   <div
                     onClick={() => onSelectReservation(occupyingRes)}
-                    className={`p-3 sm:p-3.5 rounded-2xl border cursor-pointer transition-all shadow-2xs ${
+                    className={`p-2.5 sm:p-3 rounded-2xl border cursor-pointer transition-all shadow-2xs flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 ${
                       isMeeting
                         ? 'bg-white border-blue-200 hover:border-blue-400 hover:shadow-xs'
                         : 'bg-white border-indigo-200 hover:border-indigo-400 hover:shadow-xs'
                     }`}
                   >
-                    <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <span
-                          className={`text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full border ${
-                            isMeeting
-                              ? 'bg-blue-50 text-blue-800 border-blue-200'
-                              : 'bg-indigo-50 text-indigo-800 border-indigo-200'
-                          }`}
-                        >
-                          {occupyingRes.startTime}~{occupyingRes.endTime}
-                        </span>
-                        <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap min-w-0 flex-1">
+                      <span
+                        className={`text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-lg border shrink-0 ${
+                          isMeeting
+                            ? 'bg-blue-50 text-blue-800 border-blue-200'
+                            : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                        }`}
+                      >
+                        {occupyingRes.startTime} ~ {occupyingRes.endTime}
+                      </span>
+                      <span className="text-slate-300 hidden sm:inline">|</span>
+                      <span className="text-xs sm:text-sm font-medium text-slate-800 truncate min-w-0">
+                        {occupyingRes.purpose}
+                      </span>
+                      <span className="text-slate-300 hidden sm:inline">|</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="font-semibold text-slate-900 text-xs sm:text-sm">
                           {occupyingRes.userName} 교사
                         </span>
-                        {occupyingRes.department && (
-                          <span className="text-[11px] sm:text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                            {occupyingRes.department}
-                          </span>
-                        )}
                       </div>
-                      <span className="text-xs text-blue-600 hover:underline font-semibold shrink-0">
-                        상세/수정/취소 &rarr;
-                      </span>
                     </div>
-                    <p className="text-xs text-slate-600 font-normal mt-1.5 truncate">
-                      목적: {occupyingRes.purpose}
-                    </p>
+                    <span className="text-xs text-blue-600 hover:underline font-semibold shrink-0 ml-auto flex items-center gap-1">
+                      상세/수정/취소 &rarr;
+                    </span>
                   </div>
                 ) : blocked && blocked.type === 'blocked' ? (
                   <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5 py-1">

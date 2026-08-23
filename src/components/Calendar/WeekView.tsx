@@ -112,6 +112,7 @@ export default function WeekView({
                 (b) =>
                   b.date === day.date && (b.spaceId === 'all' || b.spaceId === space.id)
               );
+              const isHoliday = isSun || (blocked && blocked.type === 'holiday');
 
               return (
                 <div
@@ -123,7 +124,7 @@ export default function WeekView({
                 >
                   <span
                     className={`block text-xs sm:text-sm font-semibold mb-1 ${
-                      isSun ? 'text-rose-600' : isSat ? 'text-blue-600' : 'text-slate-600'
+                      isHoliday ? 'text-rose-600' : isSat ? 'text-blue-600' : 'text-slate-600'
                     }`}
                   >
                     {dayLabels[i]}
@@ -132,14 +133,12 @@ export default function WeekView({
                     className={`inline-flex items-center justify-center text-sm sm:text-base font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-full ${
                       day.isToday
                         ? 'bg-blue-600 text-white shadow-xs'
-                        : blocked && blocked.type === 'holiday'
-                        ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                        : isHoliday
+                        ? 'text-rose-600 bg-rose-50 border border-rose-200'
                         : blocked && blocked.type === 'blocked'
                         ? 'bg-slate-200 text-slate-700'
                         : isSelected
                         ? 'bg-slate-900 text-white'
-                        : isSun
-                        ? 'text-rose-600'
                         : isSat
                         ? 'text-blue-600'
                         : 'text-slate-800'
@@ -147,6 +146,11 @@ export default function WeekView({
                   >
                     {day.dayNumber}
                   </span>
+                  {blocked && blocked.type === 'holiday' && (
+                    <span className="text-[10px] text-rose-600 font-semibold truncate max-w-full px-1 mt-0.5">
+                      {blocked.reason}
+                    </span>
+                  )}
                 </div>
               );
             })}

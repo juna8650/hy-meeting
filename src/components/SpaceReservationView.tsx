@@ -8,13 +8,10 @@ import {
   Calendar,
   Clock,
   Users,
-  MapPin,
-  Sparkles,
   Plus,
   Tv,
   DoorClosed,
   ChevronRight,
-  Info,
 } from 'lucide-react';
 import { formatKoreanDate } from '../utils/dateUtils';
 
@@ -43,7 +40,6 @@ export default function SpaceReservationView({
 }: SpaceReservationViewProps) {
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('month');
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
-  const [showInfo, setShowInfo] = useState(false);
 
   const isMeeting = space.id === 'meeting-room';
 
@@ -86,25 +82,7 @@ export default function SpaceReservationView({
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full border ${
-                    isMeeting
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                      : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                  }`}
-                >
-                  {space.location}
-                </span>
-                <button
-                  onClick={() => setShowInfo(!showInfo)}
-                  className="text-xs sm:text-sm text-slate-500 hover:text-blue-600 flex items-center gap-1 hover:underline font-medium"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                  시설 정보 {showInfo ? '접기' : '보기'}
-                </button>
-              </div>
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900 mt-0.5">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900">
                 {space.name} 예약 현황
               </h2>
             </div>
@@ -142,39 +120,6 @@ export default function SpaceReservationView({
           </button>
         </div>
       </div>
-
-      {/* Collapsible Space Details & Equipment */}
-      {showInfo && (
-        <div className="bg-slate-50/90 rounded-3xl border border-slate-200 p-4 sm:p-6 text-slate-700 space-y-4 animate-in fade-in duration-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
-            <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              {space.name} 상세 정보 및 구비 물품
-            </h4>
-            <div className="flex items-center gap-4 text-xs text-slate-600 font-medium">
-              <span className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-slate-400" /> 수용 인원: {space.capacity}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" /> 운영: {space.openTime} ~ {space.closeTime}
-              </span>
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-            {space.description}
-          </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {space.equipment.map((eq, i) => (
-              <span
-                key={i}
-                className="bg-white border border-slate-200 px-3 py-1 rounded-xl text-xs text-slate-700 font-medium shadow-2xs"
-              >
-                {eq}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Calendar View Selector Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
