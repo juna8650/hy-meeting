@@ -243,9 +243,9 @@ export default function SpaceReservationView({
                     onClick={() => onSelectReservation(res)}
                     className="p-3.5 bg-slate-50/80 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition-all text-sm"
                   >
-                    <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
-                      <span className="font-semibold text-blue-700">{res.startTime} ~ {res.endTime}</span>
-                      <span>{res.userName}</span>
+                    <div className="flex items-center justify-between text-slate-800 mb-1">
+                      <span className="font-semibold text-blue-700 text-xs sm:text-sm">{res.startTime} ~ {res.endTime}</span>
+                      <span className="font-normal text-slate-700 text-xs sm:text-sm">{res.userName}</span>
                     </div>
                     <p className="text-slate-600 line-clamp-1 font-medium">{res.purpose}</p>
                     {res.department && (

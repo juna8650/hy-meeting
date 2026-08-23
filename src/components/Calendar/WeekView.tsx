@@ -210,11 +210,11 @@ export default function WeekView({
                           }`}
                         >
                           {isStartOfReservation && (
-                            <div className="text-[11px] font-bold truncate">
+                            <div className="text-[11px] truncate">
                               <span className="text-[10px] block text-blue-800 font-semibold">
                                 {coveringRes.startTime}~{coveringRes.endTime}
                               </span>
-                              <span>{coveringRes.userName}</span>
+                              <span className="font-normal text-slate-800">{coveringRes.userName}</span>
                               <span className="text-slate-600 font-normal text-[10px] block truncate">
                                 {coveringRes.purpose}
                               </span>

@@ -228,12 +228,12 @@ export default function DayTimelineView({
                         {occupyingRes.startTime} ~ {occupyingRes.endTime}
                       </span>
                       <span className="text-slate-300 hidden sm:inline">|</span>
-                      <span className="text-xs sm:text-sm font-medium text-slate-800 truncate min-w-0">
+                      <span className="text-xs sm:text-sm font-normal text-slate-700 truncate min-w-0">
                         {occupyingRes.purpose}
                       </span>
                       <span className="text-slate-300 hidden sm:inline">|</span>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="font-semibold text-slate-900 text-xs sm:text-sm">
+                        <span className="text-xs sm:text-sm font-normal text-slate-700">
                           {occupyingRes.userName} 교사
                         </span>
                       </div>

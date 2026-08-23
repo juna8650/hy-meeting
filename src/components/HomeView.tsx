@@ -104,21 +104,23 @@ export default function HomeView({
       </section>
 
       {/* Today's Schedule Overview Section */}
-      <section className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 mb-6">
+      <section className="bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-8 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-5 border-b border-slate-100 mb-5 sm:mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-slate-700 shadow-2xs">
-              <CalendarDays className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-slate-700 shadow-2xs shrink-0">
+              <CalendarDays className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-                <span>오늘의 공간 사용 일정</span>
-                <span className="text-sm font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h3 className="text-base sm:text-xl font-bold text-slate-900 whitespace-nowrap">
+                  오늘의 공간 사용 일정
+                </h3>
+                <span className="text-xs sm:text-sm font-medium text-slate-600 bg-slate-100 px-2 sm:px-2.5 py-0.5 rounded-full border border-slate-200 shrink-0">
                   {formatKoreanDate(todayStr, true)}
                 </span>
-              </h3>
-              <p className="text-sm text-slate-500 mt-1">
-                총 <strong className="text-slate-800 font-extrabold">{todayReservations.length}건</strong>의 예약이 확정되어 있습니다.
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">
+                총 <strong className="text-slate-800 font-bold">{todayReservations.length}건</strong>의 예약이 확정되어 있습니다.
               </p>
             </div>
           </div>
