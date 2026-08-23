@@ -322,18 +322,20 @@ export default function App() {
       {/* Global Footer */}
       <footer className="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-center sm:text-left">
             <span className="font-bold text-slate-200">한양과학기술고등학교</span>
-            <span className="text-slate-600">|</span>
-            <span>회의실·시청각실 공간 예약 관리 시스템</span>
+            <span className="text-slate-600 hidden sm:inline">|</span>
+            <span className="text-slate-400">회의실·시청각실 공간 예약 관리 시스템</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-500">
-            <span>교내 행정실 문의: 02-000-0000 (내선 101)</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 text-[12px] text-slate-400">
+            <span>시스템 문의 : 02-6027-4648</span>
+            <span className="text-slate-700">|</span>
             <button
+              id="footer-admin-mode-btn"
               onClick={handleOpenAdmin}
-              className="text-slate-400 hover:text-slate-200 underline"
+              className="text-slate-400 hover:text-blue-400 hover:underline transition-colors cursor-pointer font-medium flex items-center gap-1.5"
             >
-              관리자 모드
+              {isAdminLoggedIn ? '관리자 대시보드' : '관리자 모드'}
             </button>
           </div>
         </div>

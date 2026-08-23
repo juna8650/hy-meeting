@@ -67,14 +67,6 @@ export default function HomeView({
               <Search className="w-4 h-4 text-blue-300" />
               내 예약 조회 / 수정 / 취소
             </button>
-            <button
-              id="home-admin-quick-btn"
-              onClick={onOpenAdmin}
-              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-[0.98] text-amber-300 font-semibold text-xs sm:text-sm border border-amber-400/30 transition-all shadow-sm"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              관리자 모드
-            </button>
           </div>
         </div>
       </div>
