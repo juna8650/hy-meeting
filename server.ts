@@ -302,7 +302,7 @@ app.get('/api/blocked-dates', (req, res) => {
 });
 
 // 5. Add Blocked Date (Admin)
-app.post('/api/blocked-dates', (req, res) => {
+const handleAddBlockedDate = (req: express.Request, res: express.Response) => {
   const { date, spaceId, reason, type } = req.body;
   if (!date || !reason) {
     return res.status(400).json({ success: false, message: '날짜와 사유를 입력해주세요.' });
@@ -322,16 +322,22 @@ app.post('/api/blocked-dates', (req, res) => {
   saveDatabase(db);
 
   res.json({ success: true, blockedDate: newBlocked });
-});
+};
+
+app.post('/api/blocked-dates', handleAddBlockedDate);
+app.post('/api/admin/blocked-dates', handleAddBlockedDate);
 
 // 6. Delete Blocked Date (Admin)
-app.delete('/api/blocked-dates/:id', (req, res) => {
+const handleDeleteBlockedDate = (req: express.Request, res: express.Response) => {
   const { id } = req.params;
   const db = getDatabase();
   db.blockedDates = db.blockedDates.filter((b) => b.id !== id);
   saveDatabase(db);
   res.json({ success: true });
-});
+};
+
+app.delete('/api/blocked-dates/:id', handleDeleteBlockedDate);
+app.delete('/api/admin/blocked-dates/:id', handleDeleteBlockedDate);
 
 // 7. Get Reservations (with filtering)
 app.get('/api/reservations', (req, res) => {
@@ -650,10 +656,10 @@ app.put('/api/reservations/:id', (req, res) => {
   res.json({ success: true, reservation: safeResponse });
 });
 
-// 12. Cancel Reservation
-app.delete('/api/reservations/:id', (req, res) => {
+// 12. Cancel Reservation (Supports both DELETE /api/reservations/:id and POST /api/reservations/:id/cancel)
+const handleCancelReservation = (req: express.Request, res: express.Response) => {
   const { id } = req.params;
-  const { password, cancelReason, isAdminOverride, permanent } = req.body || {};
+  const { password, cancelReason, reason, isAdminOverride, permanent } = req.body || {};
 
   const db = getDatabase();
   const resIndex = db.reservations.findIndex((r) => r.id === id);
@@ -676,20 +682,31 @@ app.delete('/api/reservations/:id', (req, res) => {
 
   if (permanent && isAdminOverride) {
     db.reservations.splice(resIndex, 1);
+    saveDatabase(db);
+    return res.json({ success: true, message: '예약이 영구 삭제되었습니다.' });
   } else {
     // Soft cancel to preserve audit history
-    db.reservations[resIndex] = {
+    const updated = {
       ...existing,
-      status: 'cancelled',
+      status: 'cancelled' as const,
       cancelledAt: new Date().toISOString(),
-      cancelReason: cancelReason || '사용자 직접 취소',
+      cancelReason: cancelReason || reason || '사용자 직접 취소',
       updatedAt: new Date().toISOString(),
     };
-  }
+    db.reservations[resIndex] = updated;
+    saveDatabase(db);
 
-  saveDatabase(db);
-  res.json({ success: true, message: '예약이 정상적으로 취소되었습니다.' });
-});
+    const { passwordHash, ...safeResponse } = updated;
+    return res.json({
+      success: true,
+      message: '예약이 정상적으로 취소되었습니다.',
+      reservation: safeResponse,
+    });
+  }
+};
+
+app.delete('/api/reservations/:id', handleCancelReservation);
+app.post('/api/reservations/:id/cancel', handleCancelReservation);
 
 // 13. Admin Login
 app.post('/api/admin/login', (req, res) => {
@@ -760,6 +777,10 @@ app.get('/api/stats', (req, res) => {
     },
   });
 });
+
+// Static public directory serving (ensures UTF-8 image filenames like /로고2.png serve reliably)
+const publicPath = path.join(process.cwd(), 'public');
+app.use(express.static(publicPath));
 
 // ----------------------------------------------------
 // VITE INTEGRATION

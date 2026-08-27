@@ -68,7 +68,26 @@ export default function ReservationEditModal({
   }, [isOpen, reservation, verifiedPassword]);
 
   const activeSpace = spaces.find((s) => s.id === spaceId) || spaces[0];
-  const timeSlots = generateTimeSlots(activeSpace?.openTime || '08:30', activeSpace?.closeTime || '17:30', 30);
+  const timeSlots = generateTimeSlots(activeSpace?.openTime || '08:30', activeSpace?.closeTime || '18:30', 30);
+
+  // Available end times (strictly greater than current start time)
+  const availableEndTimes = timeSlots.filter(
+    (t) => timeToMinutes(t) > timeToMinutes(startTime)
+  );
+
+  const handleStartTimeChange = (newStart: string) => {
+    setStartTime(newStart);
+    const startMin = timeToMinutes(newStart);
+    const currentEndMin = timeToMinutes(endTime);
+
+    if (currentEndMin <= startMin) {
+      const closeMin = timeToMinutes(activeSpace?.closeTime || '18:30');
+      const nextEndMin = Math.min(startMin + 60, closeMin);
+      const endH = Math.floor(nextEndMin / 60);
+      const endM = nextEndMin % 60;
+      setEndTime(`${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`);
+    }
+  };
 
   // Check conflicts
   useEffect(() => {
@@ -261,7 +280,7 @@ export default function ReservationEditModal({
                 <span className="text-[11px] text-slate-500 block mb-1 font-semibold">시작 시간</span>
                 <CustomSelect
                   value={startTime}
-                  onChange={(val) => setStartTime(val)}
+                  onChange={(val) => handleStartTimeChange(val)}
                   options={timeSlots.slice(0, -1).map((t) => ({ value: t, label: t }))}
                 />
               </div>
@@ -271,7 +290,11 @@ export default function ReservationEditModal({
                 <CustomSelect
                   value={endTime}
                   onChange={(val) => setEndTime(val)}
-                  options={timeSlots.slice(1).map((t) => ({ value: t, label: t }))}
+                  options={
+                    availableEndTimes.length > 0
+                      ? availableEndTimes.map((t) => ({ value: t, label: t }))
+                      : timeSlots.slice(1).map((t) => ({ value: t, label: t }))
+                  }
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
+  Building2,
   DoorClosed,
   Tv,
   Search,
@@ -8,7 +9,6 @@ import {
   Home,
 } from 'lucide-react';
 import { SpaceId } from '../types';
-import { SchoolSymbol } from './SchoolSymbol';
 
 interface HeaderProps {
   currentView: 'home' | 'space' | 'lookup' | 'admin';
@@ -60,22 +60,37 @@ export default function Header({
             <div
               id="brand-logo-button"
               onClick={onNavigateHome}
-              className="flex items-center gap-3 sm:gap-3.5 cursor-pointer group select-none py-0.5"
+              className="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group select-none py-0.5"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && onNavigateHome()}
             >
-              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full overflow-hidden shadow-md shrink-0 group-hover:scale-105 transition-transform bg-white border border-slate-600/60 flex items-center justify-center">
-                <SchoolSymbol className="w-full h-full" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white p-0.5 flex items-center justify-center shadow-md shadow-black/30 border border-white/30 group-hover:scale-105 transition-all shrink-0 overflow-hidden">
+                <img
+                  src="https://i.ibb.co/Y7gMw8Fj/2.png"
+                  alt="한양과학기술고등학교 로고"
+                  className="w-full h-full object-contain rounded-full"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== window.location.origin + '/로고2.png') {
+                      target.src = '/로고2.png';
+                    } else {
+                      target.style.display = 'none';
+                      if (target.nextElementSibling) {
+                        (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                      }
+                    }
+                  }}
+                />
+                <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
-                  <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white group-hover:text-blue-200 transition-colors flex items-center leading-tight">
-                    한양과학기술고등학교
-                  </h1>
-                  <span className="text-slate-600 hidden sm:inline">|</span>
-                  <span className="font-medium text-slate-300 text-xs sm:text-sm hidden xs:inline leading-tight">
-                    공간 예약 시스템
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-blue-400 uppercase">
+                    Hanyang Science & Tech High School
                   </span>
                   {isAdminLoggedIn && (
                     <span className="bg-amber-500/20 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/40">
@@ -83,9 +98,13 @@ export default function Header({
                     </span>
                   )}
                 </div>
-                <div className="text-[9px] sm:text-[10.5px] font-bold tracking-wide text-blue-300 uppercase mt-0.5 leading-none">
-                  HANYANG SCIENCE AND TECHNOLOGY HIGH SCHOOL
-                </div>
+                <h1 className="text-sm sm:text-base md:text-lg font-bold tracking-tight text-white group-hover:text-blue-200 transition-colors flex items-center gap-1.5 sm:gap-2">
+                  <span>한양과학기술고등학교</span>
+                  <span className="text-slate-600 hidden sm:inline">|</span>
+                  <span className="font-normal text-slate-300 text-xs sm:text-sm hidden xs:inline">
+                    공간 예약 시스템
+                  </span>
+                </h1>
               </div>
             </div>
 

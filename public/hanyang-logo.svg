@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <!-- Definition of text path for circular text -->
+  <defs>
+    <!-- Top arc path for "HANYANG SCIENCE AND TECHNOLOGY HIGH SCHOOL" -->
+    <!-- Arc radius = 242, center = (300, 300) -->
+    <path id="text-arc" d="M 80 370 A 242 242 0 1 1 520 370" fill="none" />
+  </defs>
+
+  <!-- 1. Background White Circle -->
+  <circle cx="300" cy="300" r="296" fill="#FFFFFF" />
+
+  <!-- 2. Outermost Thin Navy Ring -->
+  <circle cx="300" cy="300" r="292" stroke="#162B59" stroke-width="6" fill="none" />
+
+  <!-- 3. Thick Navy Ring (Band) -->
+  <!-- Outer R = 282, Inner R = 202 -->
+  <path d="M 300 18 A 282 282 0 1 0 300 582 A 282 282 0 1 0 300 18 Z M 300 98 A 202 202 0 1 1 300 502 A 202 202 0 1 1 300 98 Z" fill="#162B59" fill-rule="evenodd" />
+
+  <!-- 4. Inner Thin Navy Ring (Separation Border) -->
+  <circle cx="300" cy="300" r="202" stroke="#162B59" stroke-width="4" fill="none" />
+
+  <!-- 5. English Text on Arc -->
+  <text fill="#FFFFFF" font-size="26" font-weight="900" letter-spacing="0.04em" font-family="'Arial Black', 'Impact', 'Segoe UI', 'Pretendard', sans-serif">
+    <textPath href="#text-arc" startOffset="50%" text-anchor="middle">
+      HANYANG SCIENCE AND TECHNOLOGY HIGH SCHOOL
+    </textPath>
+  </text>
+
+  <!-- 6. Outer Band Bottom Decoration -->
+  <!-- Separator Dots -->
+  <circle cx="106" cy="378" r="10" fill="#FFFFFF" />
+  <circle cx="494" cy="378" r="10" fill="#FFFFFF" />
+
+  <!-- Center Bottom Dot -->
+  <circle cx="300" cy="546" r="9" fill="#FFFFFF" />
+
+  <!-- Left Laurel Branch -->
+  <path d="M 130 408 Q 170 484 230 522" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" fill="none" />
+  <!-- Left Leaves -->
+  <path d="M 132 400 C 114 392 124 374 146 386 C 150 400 140 406 132 400 Z" fill="#FFFFFF" />
+  <path d="M 152 422 C 134 414 144 396 166 408 C 170 422 160 428 152 422 Z" fill="#FFFFFF" />
+  <path d="M 174 452 C 158 444 166 426 188 438 C 192 450 182 458 174 452 Z" fill="#FFFFFF" />
+  <path d="M 198 480 C 182 472 190 454 212 466 C 216 478 206 486 198 480 Z" fill="#FFFFFF" />
+
+  <!-- Left Flower (4 Petals) -->
+  <g transform="translate(236, 524) scale(1.05)">
+    <ellipse cx="0" cy="-12" rx="5" ry="11" fill="#FFFFFF" transform="rotate(15)" />
+    <ellipse cx="0" cy="12" rx="5" ry="11" fill="#FFFFFF" transform="rotate(15)" />
+    <ellipse cx="-12" cy="0" rx="11" ry="5" fill="#FFFFFF" transform="rotate(15)" />
+    <ellipse cx="12" cy="0" rx="11" ry="5" fill="#FFFFFF" transform="rotate(15)" />
+    <circle cx="0" cy="0" r="4.5" fill="#162B59" />
+  </g>
+
+  <!-- Right Laurel Branch -->
+  <path d="M 470 408 Q 430 484 370 522" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" fill="none" />
+  <!-- Right Leaves -->
+  <path d="M 468 400 C 486 392 476 374 454 386 C 450 400 460 406 468 400 Z" fill="#FFFFFF" />
+  <path d="M 448 422 C 466 414 456 396 434 408 C 430 422 440 428 448 422 Z" fill="#FFFFFF" />
+  <path d="M 426 452 C 442 444 434 426 412 438 C 408 450 418 458 426 452 Z" fill="#FFFFFF" />
+  <path d="M 402 480 C 418 472 410 454 388 466 C 384 478 394 486 402 480 Z" fill="#FFFFFF" />
+
+  <!-- Right Flower (4 Petals) -->
+  <g transform="translate(364, 524) scale(1.05)">
+    <ellipse cx="0" cy="-12" rx="5" ry="11" fill="#FFFFFF" transform="rotate(-15)" />
+    <ellipse cx="0" cy="12" rx="5" ry="11" fill="#FFFFFF" transform="rotate(-15)" />
+    <ellipse cx="-12" cy="0" rx="11" ry="5" fill="#FFFFFF" transform="rotate(-15)" />
+    <ellipse cx="12" cy="0" rx="11" ry="5" fill="#FFFFFF" transform="rotate(-15)" />
+    <circle cx="0" cy="0" r="4.5" fill="#162B59" />
+  </g>
+
+  <!-- 7. Center Inner Graphic -->
+  <!-- Korean Syllables '한' and '양' -->
+  <text x="182" y="235" fill="#162B59" font-size="70" font-weight="900" text-anchor="middle" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif">한</text>
+  <text x="418" y="235" fill="#162B59" font-size="70" font-weight="900" text-anchor="middle" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif">양</text>
+
+  <!-- Outer Thick Triangle -->
+  <polygon points="300,138 158,380 442,380" stroke="#162B59" stroke-width="13" stroke-linejoin="round" fill="none" />
+
+  <!-- Inner Thin Triangle -->
+  <polygon points="300,175 186,362 414,362" stroke="#162B59" stroke-width="5" stroke-linejoin="round" fill="none" />
+
+  <!-- 3 Triangular Spikes pointing inward to the corners -->
+  <polygon points="300,178 294,258 306,258" fill="#162B59" />
+  <polygon points="204,342 254,304 264,314" fill="#162B59" />
+  <polygon points="396,342 346,304 336,314" fill="#162B59" />
+
+  <!-- Horizontal Gear Bars (3 left, 3 right) -->
+  <line x1="224" y1="284" x2="264" y2="284" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+  <line x1="218" y1="300" x2="258" y2="300" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+  <line x1="224" y1="316" x2="264" y2="316" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+
+  <line x1="336" y1="284" x2="376" y2="284" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+  <line x1="342" y1="300" x2="382" y2="300" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+  <line x1="336" y1="316" x2="376" y2="316" stroke="#162B59" stroke-width="7" stroke-linecap="round" />
+
+  <!-- Center Circle Gear Emblem -->
+  <circle cx="300" cy="300" r="47" fill="#162B59" />
+  <circle cx="300" cy="300" r="40" fill="#FFFFFF" />
+
+  <!-- Center Chinese Character '高' -->
+  <text x="300" y="320" fill="#162B59" font-size="54" font-weight="bold" text-anchor="middle" font-family="'Batang', 'Songti SC', 'Noto Serif KR', serif">高</text>
+
+  <!-- Bottom Year '1945' -->
+  <text x="300" y="442" fill="#162B59" font-size="52" font-weight="900" letter-spacing="0.08em" text-anchor="middle" font-family="'Arial Black', 'Pretendard', sans-serif">1945</text>
+</svg>

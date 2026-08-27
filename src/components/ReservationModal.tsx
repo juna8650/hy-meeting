@@ -89,6 +89,35 @@ export default function ReservationModal({
   const activeSpace = allSpaces.find((s) => s.id === selectedSpaceId) || space;
   const timeSlots = generateTimeSlots(activeSpace.openTime, activeSpace.closeTime, 30);
 
+  // Available end times (strictly greater than current start time)
+  const availableEndTimes = timeSlots.filter(
+    (t) => timeToMinutes(t) > timeToMinutes(startTime)
+  );
+
+  // Handle start time change with intelligent end time adjustment
+  const handleStartTimeChange = (newStart: string) => {
+    setStartTime(newStart);
+    const startMin = timeToMinutes(newStart);
+    const currentEndMin = timeToMinutes(endTime);
+
+    if (currentEndMin <= startMin) {
+      // Default to 1 hour after or the next available slot
+      const closeMin = timeToMinutes(activeSpace.closeTime);
+      const nextEndMin = Math.min(startMin + 60, closeMin);
+      const endH = Math.floor(nextEndMin / 60);
+      const endM = nextEndMin % 60;
+      setEndTime(`${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`);
+    }
+  };
+
+  // Check if current date is blocked for the selected space
+  const currentBlockedDate = blockedDates.find(
+    (b) =>
+      b.date === date &&
+      (b.spaceId === 'all' || b.spaceId === selectedSpaceId) &&
+      b.type !== 'holiday'
+  );
+
   // Check conflicts automatically when space, date, or times change
   useEffect(() => {
     if (!isOpen || !date || !startTime || !endTime) return;
@@ -309,7 +338,7 @@ export default function ReservationModal({
                 <CustomSelect
                   id="modal-start-time-select"
                   value={startTime}
-                  onChange={(val) => setStartTime(val)}
+                  onChange={(val) => handleStartTimeChange(val)}
                   options={timeSlots.slice(0, -1).map((t) => ({ value: t, label: t }))}
                 />
               </div>
@@ -320,14 +349,23 @@ export default function ReservationModal({
                   id="modal-end-time-select"
                   value={endTime}
                   onChange={(val) => setEndTime(val)}
-                  options={timeSlots.slice(1).map((t) => ({ value: t, label: t }))}
+                  options={
+                    availableEndTimes.length > 0
+                      ? availableEndTimes.map((t) => ({ value: t, label: t }))
+                      : timeSlots.slice(1).map((t) => ({ value: t, label: t }))
+                  }
                 />
               </div>
             </div>
 
-            {/* Real-time Conflict Alert - Stable Container */}
+            {/* Blocked Date or Real-time Conflict Alert */}
             <div className="min-h-[42px] flex items-center">
-              {conflictResult?.hasConflict ? (
+              {currentBlockedDate ? (
+                <div className="w-full p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>선택하신 날짜는 시설 점검({currentBlockedDate.reason})으로 예약이 제한됩니다.</span>
+                </div>
+              ) : conflictResult?.hasConflict ? (
                 <div className="w-full p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span>{conflictResult.message}</span>
