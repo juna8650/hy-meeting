@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Reservation, Space } from '../types';
 import { formatKoreanDate } from '../utils/dateUtils';
 import { api } from '../services/api';
@@ -16,7 +16,6 @@ import {
   ShieldAlert,
   Loader2,
   AlertCircle,
-  CheckCircle,
 } from 'lucide-react';
 
 interface ReservationDetailModalProps {
@@ -43,9 +42,26 @@ export default function ReservationDetailModal({
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Reset authentication state whenever modal opens or reservation changes
+  useEffect(() => {
+    if (isOpen) {
+      setAuthMode('none');
+      setPassword('');
+      setErrorMessage('');
+      setIsVerifying(false);
+    }
+  }, [isOpen, reservation?.id]);
+
   if (!isOpen || !reservation) return null;
 
   const isCancelled = reservation.status === 'cancelled';
+
+  const handleClose = () => {
+    setAuthMode('none');
+    setPassword('');
+    setErrorMessage('');
+    onClose();
+  };
 
   const handleStartAuth = (mode: 'edit' | 'cancel') => {
     if (isAdminLoggedIn) {
@@ -91,7 +107,11 @@ export default function ReservationDetailModal({
     <div
       id="detail-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
     >
       <div
         id="detail-modal-content"
@@ -113,8 +133,9 @@ export default function ReservationDetailModal({
           </div>
 
           <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all"
+            id="detail-modal-close-btn"
+            onClick={handleClose}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -273,7 +294,7 @@ export default function ReservationDetailModal({
                 <button
                   type="button"
                   onClick={() => setAuthMode('none')}
-                  className="px-3 py-2.5 bg-slate-200/80 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition-all"
+                  className="px-3 py-2.5 bg-slate-200/80 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition-all cursor-pointer"
                 >
                   취소
                 </button>

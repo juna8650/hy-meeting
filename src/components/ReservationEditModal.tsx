@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Reservation, Space, SpaceId, ConflictCheckResult } from '../types';
 import { generateTimeSlots, formatKoreanDate, timeToMinutes } from '../utils/dateUtils';
 import { api } from '../services/api';
@@ -51,8 +51,10 @@ export default function ReservationEditModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const wasOpenRef = useRef(false);
+
   useEffect(() => {
-    if (isOpen && reservation) {
+    if (isOpen && reservation && (!wasOpenRef.current || reservation.id)) {
       setSpaceId(reservation.spaceId);
       setDate(reservation.date);
       setStartTime(reservation.startTime);
@@ -65,7 +67,8 @@ export default function ReservationEditModal({
       setErrorMessage('');
       setConflictResult(null);
     }
-  }, [isOpen, reservation, verifiedPassword]);
+    wasOpenRef.current = isOpen;
+  }, [isOpen, reservation?.id, verifiedPassword]);
 
   const activeSpace = spaces.find((s) => s.id === spaceId) || spaces[0];
   const timeSlots = generateTimeSlots(activeSpace?.openTime || '08:30', activeSpace?.closeTime || '18:30', 30);
@@ -182,7 +185,11 @@ export default function ReservationEditModal({
     <div
       id="edit-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         id="edit-modal-content"

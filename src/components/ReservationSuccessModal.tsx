@@ -48,7 +48,11 @@ export default function ReservationSuccessModal({
     <div
       id="success-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         id="success-modal-content"

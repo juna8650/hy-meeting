@@ -262,8 +262,14 @@ export default function SpaceReservationView({
           {/* Action button */}
           {(!blocked || blocked.type === 'holiday') && (
             <button
-              onClick={() => onOpenBookingModal(selectedDate)}
-              className={`w-full py-3 rounded-2xl text-sm sm:text-base font-bold text-white shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] ${
+              id="sidebar-book-selected-date-btn"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onOpenBookingModal(selectedDate);
+              }}
+              className={`w-full py-3 rounded-2xl text-sm sm:text-base font-bold text-white shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] cursor-pointer ${
                 isMeeting
                   ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
                   : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20'

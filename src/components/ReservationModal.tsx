@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Space, CreateReservationInput, ConflictCheckResult, BlockedDate } from '../types';
 import {
   generateTimeSlots,
@@ -60,9 +60,11 @@ export default function ReservationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Sync state when modal opens or initial props change
+  const wasOpenRef = useRef(false);
+
+  // Sync state only when modal transitions from closed to open
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenRef.current) {
       setSelectedSpaceId(space.id);
       setDate(initialDate);
       const defaultStart = initialStartTime || '09:00';
@@ -84,7 +86,8 @@ export default function ReservationModal({
       setErrorMessage('');
       setConflictResult(null);
     }
-  }, [isOpen, space, initialDate, initialStartTime]);
+    wasOpenRef.current = isOpen;
+  }, [isOpen, space.id, initialDate, initialStartTime, space.closeTime]);
 
   const activeSpace = allSpaces.find((s) => s.id === selectedSpaceId) || space;
   const timeSlots = generateTimeSlots(activeSpace.openTime, activeSpace.closeTime, 30);
@@ -222,7 +225,11 @@ export default function ReservationModal({
     <div
       id="reservation-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         id="reservation-modal-content"
