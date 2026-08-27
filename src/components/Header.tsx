@@ -5,10 +5,10 @@ import {
   Search,
   ShieldCheck,
   LogOut,
-  Building2,
   Home,
 } from 'lucide-react';
 import { SpaceId } from '../types';
+import { SchoolSymbol } from './SchoolSymbol';
 
 interface HeaderProps {
   currentView: 'home' | 'space' | 'lookup' | 'admin';
@@ -60,18 +60,22 @@ export default function Header({
             <div
               id="brand-logo-button"
               onClick={onNavigateHome}
-              className="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group select-none"
+              className="flex items-center gap-3 sm:gap-3.5 cursor-pointer group select-none py-0.5"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && onNavigateHome()}
             >
-              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 border border-blue-400/30 group-hover:scale-105 transition-all shrink-0">
-                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full overflow-hidden shadow-md shrink-0 group-hover:scale-105 transition-transform bg-white border border-slate-600/60 flex items-center justify-center">
+                <SchoolSymbol className="w-full h-full" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-blue-400 uppercase">
-                    Hanyang Science & Tech High School
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                  <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white group-hover:text-blue-200 transition-colors flex items-center leading-tight">
+                    한양과학기술고등학교
+                  </h1>
+                  <span className="text-slate-600 hidden sm:inline">|</span>
+                  <span className="font-medium text-slate-300 text-xs sm:text-sm hidden xs:inline leading-tight">
+                    공간 예약 시스템
                   </span>
                   {isAdminLoggedIn && (
                     <span className="bg-amber-500/20 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/40">
@@ -79,13 +83,9 @@ export default function Header({
                     </span>
                   )}
                 </div>
-                <h1 className="text-sm sm:text-base md:text-lg font-bold tracking-tight text-white group-hover:text-blue-200 transition-colors flex items-center gap-1.5 sm:gap-2">
-                  <span>한양과학기술고등학교</span>
-                  <span className="text-slate-600 hidden sm:inline">|</span>
-                  <span className="font-normal text-slate-300 text-xs sm:text-sm hidden xs:inline">
-                    공간 예약 시스템
-                  </span>
-                </h1>
+                <div className="text-[9px] sm:text-[10.5px] font-bold tracking-wide text-blue-300 uppercase mt-0.5 leading-none">
+                  HANYANG SCIENCE AND TECHNOLOGY HIGH SCHOOL
+                </div>
               </div>
             </div>
 
