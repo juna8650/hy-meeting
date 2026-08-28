@@ -112,7 +112,9 @@ export default function WeekView({
                 (b) =>
                   b.date === day.date && (b.spaceId === 'all' || b.spaceId === space.id)
               );
-              const isHoliday = isSun || (blocked && blocked.type === 'holiday');
+              const isHoliday = day.isHoliday || (blocked && blocked.type === 'holiday');
+              const holidayTitle = day.holidayName || (blocked && blocked.type === 'holiday' ? blocked.reason : null);
+              const isRed = isSun || isHoliday;
 
               return (
                 <div
@@ -124,7 +126,7 @@ export default function WeekView({
                 >
                   <span
                     className={`block text-xs sm:text-sm font-semibold mb-1 ${
-                      isHoliday ? 'text-rose-600' : isSat ? 'text-blue-600' : 'text-slate-600'
+                      isRed ? 'text-rose-600 font-bold' : isSat ? 'text-blue-600 font-bold' : 'text-slate-600'
                     }`}
                   >
                     {dayLabels[i]}
@@ -134,21 +136,23 @@ export default function WeekView({
                       day.isToday
                         ? 'bg-blue-600 text-white shadow-xs'
                         : isHoliday
-                        ? 'text-rose-600 bg-rose-50 border border-rose-200'
+                        ? 'text-rose-600 bg-rose-50 border border-rose-200 shadow-2xs font-extrabold'
+                        : isRed
+                        ? 'text-rose-600 font-extrabold'
                         : blocked && blocked.type === 'blocked'
                         ? 'bg-slate-200 text-slate-700'
                         : isSelected
                         ? 'bg-slate-900 text-white'
                         : isSat
-                        ? 'text-blue-600'
+                        ? 'text-blue-600 font-bold'
                         : 'text-slate-800'
                     }`}
                   >
                     {day.dayNumber}
                   </span>
-                  {blocked && blocked.type === 'holiday' && (
-                    <span className="text-[10px] text-rose-600 font-semibold truncate max-w-full px-1 mt-0.5">
-                      {blocked.reason}
+                  {holidayTitle && (
+                    <span className="text-[10px] text-rose-600 bg-rose-50 border border-rose-200/80 font-bold rounded px-1 truncate max-w-full mt-1 shadow-3xs">
+                      {holidayTitle}
                     </span>
                   )}
                 </div>

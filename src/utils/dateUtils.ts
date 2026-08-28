@@ -1,3 +1,6 @@
+import { getKoreanHolidayName, isKoreanHoliday, isRedDay } from './holidayUtils';
+export { getKoreanHolidayName, isKoreanHoliday, isRedDay };
+
 // Helper for parsing "HH:mm" to total minutes
 export function timeToMinutes(timeStr: string): number {
   const [hours, minutes] = timeStr.split(':').map(Number);
@@ -94,6 +97,9 @@ export interface CalendarDay {
   isCurrentMonth: boolean;
   isToday: boolean;
   isWeekend: boolean;
+  isHoliday: boolean;
+  holidayName: string | null;
+  isRedDay: boolean; // Sunday or holiday
 }
 
 export function getMonthCalendarDays(year: number, month: number, todayISO: string): CalendarDay[] {
@@ -111,12 +117,16 @@ export function getMonthCalendarDays(year: number, month: number, todayISO: stri
     const dayNum = prevMonthLastDay - i;
     const prevDate = new Date(year, month - 1, dayNum);
     const dateStr = formatDateISO(prevDate);
+    const holidayName = getKoreanHolidayName(dateStr);
     days.push({
       date: dateStr,
       dayNumber: dayNum,
       isCurrentMonth: false,
       isToday: dateStr === todayISO,
       isWeekend: isWeekend(dateStr),
+      isHoliday: !!holidayName,
+      holidayName,
+      isRedDay: isRedDay(dateStr),
     });
   }
 
@@ -124,12 +134,16 @@ export function getMonthCalendarDays(year: number, month: number, todayISO: stri
   for (let i = 1; i <= daysInMonth; i++) {
     const currDate = new Date(year, month, i);
     const dateStr = formatDateISO(currDate);
+    const holidayName = getKoreanHolidayName(dateStr);
     days.push({
       date: dateStr,
       dayNumber: i,
       isCurrentMonth: true,
       isToday: dateStr === todayISO,
       isWeekend: isWeekend(dateStr),
+      isHoliday: !!holidayName,
+      holidayName,
+      isRedDay: isRedDay(dateStr),
     });
   }
 
@@ -138,12 +152,16 @@ export function getMonthCalendarDays(year: number, month: number, todayISO: stri
   for (let i = 1; i <= remainingSlots; i++) {
     const nextDate = new Date(year, month + 1, i);
     const dateStr = formatDateISO(nextDate);
+    const holidayName = getKoreanHolidayName(dateStr);
     days.push({
       date: dateStr,
       dayNumber: i,
       isCurrentMonth: false,
       isToday: dateStr === todayISO,
       isWeekend: isWeekend(dateStr),
+      isHoliday: !!holidayName,
+      holidayName,
+      isRedDay: isRedDay(dateStr),
     });
   }
 
@@ -164,12 +182,16 @@ export function getWeekDays(dateStr: string, todayISO: string): CalendarDay[] {
     const day = new Date(startOfWeek);
     day.setDate(startOfWeek.getDate() + i);
     const dStr = formatDateISO(day);
+    const holidayName = getKoreanHolidayName(dStr);
     weekDays.push({
       date: dStr,
       dayNumber: day.getDate(),
       isCurrentMonth: day.getMonth() === targetDate.getMonth(),
       isToday: dStr === todayISO,
       isWeekend: i === 0 || i === 6,
+      isHoliday: !!holidayName,
+      holidayName,
+      isRedDay: isRedDay(dStr),
     });
   }
   return weekDays;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Reservation, ReservationDetail, Space } from '../types';
-import { formatKoreanDate } from '../utils/dateUtils';
+import { formatKoreanDate, getKoreanHolidayName, isRedDay } from '../utils/dateUtils';
 import { api } from '../services/api';
 import {
   X,
@@ -224,9 +224,18 @@ export default function ReservationDetailModal({
                   <span className="text-slate-500 flex items-center gap-1.5 font-medium">
                     <Calendar className="w-4 h-4 text-slate-400" /> 날짜
                   </span>
-                  <span className="font-bold text-slate-900">
-                    {formatKoreanDate(currentData.date, true)}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-bold ${
+                      isRedDay(currentData.date) ? 'text-rose-600' : 'text-slate-900'
+                    }`}>
+                      {formatKoreanDate(currentData.date, true)}
+                    </span>
+                    {getKoreanHolidayName(currentData.date) && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded border border-rose-200">
+                        {getKoreanHolidayName(currentData.date)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* 3. 시간 (Time) */}

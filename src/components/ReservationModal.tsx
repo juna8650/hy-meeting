@@ -4,6 +4,8 @@ import {
   generateTimeSlots,
   formatKoreanDate,
   timeToMinutes,
+  getKoreanHolidayName,
+  isRedDay,
 } from '../utils/dateUtils';
 import { api } from '../services/api';
 import CustomSelect from './CustomSelect';
@@ -321,6 +323,17 @@ export default function ReservationModal({
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-900 bg-slate-50/60 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 required
               />
+              {date && (getKoreanHolidayName(date) || isRedDay(date)) && (
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-rose-600 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  <span>{formatKoreanDate(date, true)}</span>
+                  {getKoreanHolidayName(date) && (
+                    <span className="px-1.5 py-0.2 rounded bg-rose-50 border border-rose-200 font-bold text-[11px]">
+                      {getKoreanHolidayName(date)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

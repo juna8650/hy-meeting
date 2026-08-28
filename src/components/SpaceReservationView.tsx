@@ -13,7 +13,7 @@ import {
   DoorClosed,
   ChevronRight,
 } from 'lucide-react';
-import { formatKoreanDate } from '../utils/dateUtils';
+import { formatKoreanDate, getKoreanHolidayName, isRedDay } from '../utils/dateUtils';
 
 interface SpaceReservationViewProps {
   space: Space;
@@ -210,9 +210,20 @@ export default function SpaceReservationView({
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Selected Date
             </span>
-            <h4 className="text-base font-bold text-slate-900 mt-0.5">
-              {formatKoreanDate(selectedDate, true)}
-            </h4>
+            <div className="flex flex-wrap items-center gap-2 mt-0.5">
+              <h4 className={`text-base font-bold ${
+                isRedDay(selectedDate) || (blocked && blocked.type === 'holiday')
+                  ? 'text-rose-600'
+                  : 'text-slate-900'
+              }`}>
+                {formatKoreanDate(selectedDate, true)}
+              </h4>
+              {(getKoreanHolidayName(selectedDate) || (blocked && blocked.type === 'holiday' ? blocked.reason : null)) && (
+                <span className="text-xs font-bold px-2 py-0.5 bg-rose-50 text-rose-600 rounded-lg border border-rose-200 shadow-3xs">
+                  {getKoreanHolidayName(selectedDate) || (blocked && blocked.type === 'holiday' ? blocked.reason : null)}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Quick Schedule for Selected Date */}

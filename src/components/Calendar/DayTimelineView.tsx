@@ -3,6 +3,8 @@ import {
   generateTimeSlots,
   isTimeOverlapping,
   formatKoreanDate,
+  getKoreanHolidayName,
+  isKoreanHoliday,
 } from '../../utils/dateUtils';
 import {
   ChevronLeft,
@@ -73,8 +75,12 @@ export default function DayTimelineView({
   // Check if selectedDate is Sunday or a registered Holiday
   const [y, m, d] = selectedDate.split('-').map(Number);
   const dayOfWeek = new Date(y, m - 1, d).getDay();
-  const isHoliday = dayOfWeek === 0 || (blocked && blocked.type === 'holiday');
+  const isSun = dayOfWeek === 0;
   const isSat = dayOfWeek === 6;
+  const builtInHolidayName = getKoreanHolidayName(selectedDate);
+  const holidayTitle = builtInHolidayName || (blocked && blocked.type === 'holiday' ? blocked.reason : null);
+  const isHoliday = !!holidayTitle;
+  const isRed = isSun || isHoliday;
 
   return (
     <div className="space-y-4">
@@ -90,18 +96,18 @@ export default function DayTimelineView({
               <ChevronLeft className="w-4 h-4 sm:w-5 h-5" />
             </button>
             <h3
-              className={`text-xs sm:text-base md:text-lg font-bold px-2 sm:px-4 tracking-tight shrink-0 ${
-                isHoliday
+              className={`text-xs sm:text-base md:text-lg font-bold px-2 sm:px-4 tracking-tight shrink-0 flex items-center gap-2 ${
+                isRed
                   ? 'text-rose-600'
                   : isSat
                   ? 'text-blue-600'
                   : 'text-slate-900'
               }`}
             >
-              {formatKoreanDate(selectedDate, true)}
-              {blocked && blocked.type === 'holiday' && (
-                <span className="ml-1.5 text-xs font-semibold px-2 py-0.5 bg-rose-50 text-rose-600 rounded-lg border border-rose-200">
-                  {blocked.reason}
+              <span>{formatKoreanDate(selectedDate, true)}</span>
+              {holidayTitle && (
+                <span className="text-xs font-bold px-2 py-0.5 bg-rose-50 text-rose-600 rounded-lg border border-rose-200 shadow-3xs">
+                  {holidayTitle}
                 </span>
               )}
             </h3>

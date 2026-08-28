@@ -477,8 +477,10 @@ export default function AdminDashboard({
                                 className={`font-bold ${
                                   day.isToday
                                     ? 'text-blue-600'
+                                    : day.isRedDay
+                                    ? 'text-rose-600'
                                     : day.isWeekend
-                                    ? 'text-slate-400'
+                                    ? 'text-blue-600'
                                     : 'text-slate-900'
                                 }`}
                               >
@@ -487,6 +489,11 @@ export default function AdminDashboard({
                               {day.isToday && (
                                 <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs">
                                   오늘
+                                </span>
+                              )}
+                              {day.holidayName && (
+                                <span className="bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs">
+                                  {day.holidayName}
                                 </span>
                               )}
                             </div>

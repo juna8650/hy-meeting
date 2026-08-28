@@ -126,6 +126,11 @@ export default function MonthView({
                 b.date === day.date && (b.spaceId === 'all' || b.spaceId === space.id)
             );
 
+            // Combined holiday check (built-in Korean holiday or custom holiday in blockedDates)
+            const isHoliday = day.isHoliday || (blocked && blocked.type === 'holiday');
+            const holidayTitle = day.holidayName || (blocked && blocked.type === 'holiday' ? blocked.reason : null);
+            const isRed = isSun || isHoliday;
+
             // Day's confirmed reservations
             const dayReservations = reservations.filter(
               (r) =>
@@ -145,23 +150,32 @@ export default function MonthView({
               >
                 {/* Cell Header: Day number & Quick add */}
                 <div className="flex items-center justify-between mb-1">
-                  <span
-                    className={`inline-flex items-center justify-center text-sm sm:text-base font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-full ${
-                      day.isToday
-                        ? 'bg-blue-600 text-white shadow-xs font-bold'
-                        : blocked && blocked.type === 'holiday'
-                        ? 'bg-rose-50 text-rose-600 font-extrabold border border-rose-200 shadow-2xs'
-                        : blocked && blocked.type === 'blocked'
-                        ? 'bg-slate-200 text-slate-700'
-                        : isSun
-                        ? 'text-rose-600'
-                        : isSat
-                        ? 'text-blue-600'
-                        : 'text-slate-800'
-                    } ${isSelected && !day.isToday && !blocked ? 'bg-slate-900 text-white' : ''}`}
-                  >
-                    {day.dayNumber}
-                  </span>
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    <span
+                      className={`inline-flex items-center justify-center text-sm sm:text-base font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 ${
+                        day.isToday
+                          ? 'bg-blue-600 text-white shadow-xs font-bold'
+                          : isHoliday
+                          ? 'bg-rose-50 text-rose-600 font-extrabold border border-rose-200 shadow-2xs'
+                          : blocked && blocked.type === 'blocked'
+                          ? 'bg-slate-200 text-slate-700'
+                          : isRed
+                          ? 'text-rose-600 font-extrabold'
+                          : isSat
+                          ? 'text-blue-600 font-bold'
+                          : 'text-slate-800 font-bold'
+                      } ${isSelected && !day.isToday && !isHoliday && (!blocked || blocked.type !== 'blocked') ? 'bg-slate-900 text-white' : ''}`}
+                    >
+                      {day.dayNumber}
+                    </span>
+
+                    {/* Holiday Title Tag beside date on header if space permits */}
+                    {holidayTitle && (
+                      <span className="text-[10px] sm:text-xs font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200/80 truncate max-w-[70px] sm:max-w-[95px]">
+                        {holidayTitle}
+                      </span>
+                    )}
+                  </div>
 
                   {day.isCurrentMonth && (!blocked || blocked.type === 'holiday') && (
                     <button
@@ -171,7 +185,7 @@ export default function MonthView({
                         onSelectDate(day.date);
                         onOpenBookingModal(day.date);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shrink-0"
                       title="이 날짜에 바로 예약"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -181,12 +195,6 @@ export default function MonthView({
 
                 {/* Cell Body: Blocked reason or Reservation chips */}
                 <div className="flex-1 space-y-1 overflow-y-auto max-h-[90px] sm:max-h-[110px] scrollbar-none flex flex-col gap-1">
-                  {blocked && blocked.type === 'holiday' && (
-                    <div className="p-1 px-1.5 rounded-lg border border-rose-300 bg-rose-50 text-rose-600 text-xs sm:text-sm font-semibold text-center shadow-3xs">
-                      <span className="font-semibold">{blocked.reason}</span>
-                    </div>
-                  )}
-
                   {blocked && blocked.type === 'blocked' ? (
                     <div className="p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs sm:text-sm font-semibold flex items-center gap-1">
                       <Ban className="w-3 h-3 text-slate-400 shrink-0" />
