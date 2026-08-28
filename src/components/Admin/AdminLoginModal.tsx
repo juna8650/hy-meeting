@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
 import { api } from '../../services/api';
 import {
   X,
@@ -6,7 +6,8 @@ import {
   Lock,
   AlertCircle,
   Loader2,
-  KeyRound,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 interface AdminLoginModalProps {
@@ -21,8 +22,10 @@ export default function AdminLoginModal({
   onLoginSuccess,
 }: AdminLoginModalProps) {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const isMouseDownOnBackdrop = useRef(false);
 
   if (!isOpen) return null;
 
@@ -51,10 +54,14 @@ export default function AdminLoginModal({
     <div
       id="admin-login-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
+      onMouseDown={(e) => {
+        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
           onClose();
         }
+        isMouseDownOnBackdrop.current = false;
       }}
     >
       <div
@@ -102,27 +109,26 @@ export default function AdminLoginModal({
               <Lock className="w-3.5 h-3.5 text-amber-600" />
               관리자 비밀번호
             </label>
-            <input
-              id="admin-password-input"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="관리자 비밀번호 입력"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-mono transition-all shadow-2xs"
-              autoFocus
-              required
-            />
-          </div>
-
-          {/* Quick Demo Hint */}
-          <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-slate-500 text-xs flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-1.5 font-medium text-slate-600">
-              <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-              <span>기본 관리자 비밀번호:</span>
+            <div className="relative">
+              <input
+                id="admin-password-input"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="관리자 비밀번호 입력"
+                className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-2xs"
+                autoFocus
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                title={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-            <code className="bg-slate-200/80 px-2.5 py-0.5 rounded-lg font-mono font-bold text-slate-800 border border-slate-300/60 shadow-2xs">
-              admin1234
-            </code>
           </div>
 
           {/* Action Buttons */}

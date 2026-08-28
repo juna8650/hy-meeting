@@ -88,23 +88,23 @@ export default function Header({
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-blue-400 uppercase">
-                    Hanyang Science & Tech High School
-                  </span>
-                  {isAdminLoggedIn && (
-                    <span className="bg-amber-500/20 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/40">
-                      관리자
-                    </span>
-                  )}
-                </div>
                 <h1 className="text-sm sm:text-base md:text-lg font-bold tracking-tight text-white group-hover:text-blue-200 transition-colors flex items-center gap-1.5 sm:gap-2">
                   <span>한양과학기술고등학교</span>
                   <span className="text-slate-600 hidden sm:inline">|</span>
                   <span className="font-normal text-slate-300 text-xs sm:text-sm hidden xs:inline">
                     공간 예약 시스템
                   </span>
+                  {isAdminLoggedIn && (
+                    <span className="bg-amber-500/20 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/40 ml-1">
+                      관리자
+                    </span>
+                  )}
                 </h1>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-blue-400 uppercase">
+                    HANYANG SCIENCE AND TECHNOLOGY HIGH SCHOOL
+                  </span>
+                </div>
               </div>
             </div>
 

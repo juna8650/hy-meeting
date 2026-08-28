@@ -28,6 +28,8 @@ import {
   ChevronRight,
   ArrowLeft,
   RefreshCw,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -84,6 +86,9 @@ export default function AdminDashboard({
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmNewPw, setConfirmNewPw] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmNewPw, setShowConfirmNewPw] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -197,8 +202,7 @@ export default function AdminDashboard({
       '시작시간',
       '종료시간',
       '예약자명',
-      '부서',
-      '연락처',
+      '과/부서',
       '사용목적',
       '예약상태',
       '등록일시',
@@ -212,7 +216,6 @@ export default function AdminDashboard({
       r.endTime,
       `"${r.userName.replace(/"/g, '""')}"`,
       `"${(r.department || '').replace(/"/g, '""')}"`,
-      `"${(r.phone || '').replace(/"/g, '""')}"`,
       `"${r.purpose.replace(/"/g, '""')}"`,
       r.status === 'confirmed' ? '확정' : '취소됨',
       r.createdAt,
@@ -392,7 +395,7 @@ export default function AdminDashboard({
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight font-mono">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                 {calYear}년 {calMonth + 1}월 전체 공간 예약 대조표
               </h3>
               <button
@@ -487,7 +490,7 @@ export default function AdminDashboard({
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
+                            <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
                               {day.date}
                             </span>
                           </td>
@@ -594,7 +597,7 @@ export default function AdminDashboard({
                 type="text"
                 value={resSearch}
                 onChange={(e) => setResSearch(e.target.value)}
-                placeholder="예약자명, 목적, 부서 검색"
+                placeholder="예약자명, 목적, 과/부서 검색"
                 className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
               />
 
@@ -635,8 +638,7 @@ export default function AdminDashboard({
                     <th className="p-4">상태</th>
                     <th className="p-4">공간</th>
                     <th className="p-4">일시</th>
-                    <th className="p-4">예약자(부서)</th>
-                    <th className="p-4">연락처</th>
+                    <th className="p-4">예약자(과/부서)</th>
                     <th className="p-4">사용 목적</th>
                     <th className="p-4">등록일시</th>
                     <th className="p-4 text-right">관리 작업</th>
@@ -645,7 +647,7 @@ export default function AdminDashboard({
                 <tbody className="divide-y divide-slate-100">
                   {filteredReservations.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="p-10 text-center text-slate-400 font-medium">
+                      <td colSpan={7} className="p-10 text-center text-slate-400 font-medium">
                         조건에 일치하는 예약 내역이 없습니다.
                       </td>
                     </tr>
@@ -675,7 +677,7 @@ export default function AdminDashboard({
                           </td>
                           <td className="p-4">
                             <div className="font-bold text-slate-900">{res.date}</div>
-                            <span className="font-mono text-xs font-bold text-blue-700">
+                            <span className="text-xs font-bold text-blue-700">
                               {res.startTime} ~ {res.endTime}
                             </span>
                           </td>
@@ -687,13 +689,10 @@ export default function AdminDashboard({
                               </span>
                             )}
                           </td>
-                          <td className="p-4 font-mono text-slate-600 font-medium">
-                            {res.phone || '-'}
-                          </td>
                           <td className="p-4 max-w-xs truncate text-slate-800 font-medium">
                             {res.purpose}
                           </td>
-                          <td className="p-4 text-slate-400 text-xs font-mono">
+                          <td className="p-4 text-slate-400 text-xs font-medium">
                             {res.createdAt ? new Date(res.createdAt).toLocaleDateString() : '-'}
                           </td>
                           <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
@@ -757,7 +756,7 @@ export default function AdminDashboard({
                   </div>
                   <div>
                     <h5 className="font-bold text-slate-900 text-sm">{s.name}</h5>
-                    <span className="text-xs text-slate-500 font-mono font-medium">
+                    <span className="text-xs text-slate-500 font-medium">
                       {s.openTime} ~ {s.closeTime}
                     </span>
                   </div>
@@ -823,7 +822,7 @@ export default function AdminDashboard({
                     onChange={(e) =>
                       setSelectedSpaceSettings({ ...selectedSpaceSettings, openTime: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono font-semibold text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                     required
                   />
                 </div>
@@ -838,7 +837,7 @@ export default function AdminDashboard({
                     onChange={(e) =>
                       setSelectedSpaceSettings({ ...selectedSpaceSettings, closeTime: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono font-semibold text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                     required
                   />
                 </div>
@@ -990,7 +989,7 @@ export default function AdminDashboard({
                   >
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-slate-900 text-sm font-mono">{b.date}</span>
+                        <span className="font-bold text-slate-900 text-sm">{b.date}</span>
                         <span className="text-xs text-slate-500 font-medium">
                           ({formatKoreanDate(b.date)})
                         </span>
@@ -1060,42 +1059,72 @@ export default function AdminDashboard({
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 현재 관리자 비밀번호
               </label>
-              <input
-                type="password"
-                value={currentPw}
-                onChange={(e) => setCurrentPw(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-mono transition-all shadow-2xs"
-                placeholder="현재 비밀번호"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPw}
+                  onChange={(e) => setCurrentPw(e.target.value)}
+                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-2xs"
+                  placeholder="현재 비밀번호"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  title={showCurrentPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 새 관리자 비밀번호 (4자 이상)
               </label>
-              <input
-                type="password"
-                value={newPw}
-                onChange={(e) => setNewPw(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-mono transition-all shadow-2xs"
-                placeholder="새 비밀번호"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-2xs"
+                  placeholder="새 비밀번호"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  title={showNewPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 새 관리자 비밀번호 확인
               </label>
-              <input
-                type="password"
-                value={confirmNewPw}
-                onChange={(e) => setConfirmNewPw(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-mono transition-all shadow-2xs"
-                placeholder="새 비밀번호 재입력"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmNewPw ? 'text' : 'password'}
+                  value={confirmNewPw}
+                  onChange={(e) => setConfirmNewPw(e.target.value)}
+                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-2xs"
+                  placeholder="새 비밀번호 재입력"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmNewPw(!showConfirmNewPw)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  title={showConfirmNewPw ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showConfirmNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <button

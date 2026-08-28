@@ -208,16 +208,18 @@ export default function WeekView({
                               ? 'bg-blue-100/90 text-blue-950 hover:bg-blue-200'
                               : 'bg-indigo-100/90 text-indigo-950 hover:bg-indigo-200'
                           }`}
+                          title={`${coveringRes.startTime}~${coveringRes.endTime} ${coveringRes.department ? `[${coveringRes.department}]` : ''}`}
                         >
                           {isStartOfReservation && (
                             <div className="text-[11px] truncate">
-                              <span className="text-[10px] block text-blue-800 font-semibold">
+                              <span className="text-[10px] block text-blue-800 font-bold">
                                 {coveringRes.startTime}~{coveringRes.endTime}
                               </span>
-                              <span className="font-normal text-slate-800">{coveringRes.userName}</span>
-                              <span className="text-slate-600 font-normal text-[10px] block truncate">
-                                {coveringRes.purpose}
-                              </span>
+                              {coveringRes.department && (
+                                <span className="font-semibold text-slate-800 text-[11px] block truncate mt-0.5">
+                                  {coveringRes.department}
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>

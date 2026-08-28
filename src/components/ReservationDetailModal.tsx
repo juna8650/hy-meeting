@@ -1,26 +1,24 @@
-import { useState, useEffect, type FormEvent } from 'react';
-import { Reservation, Space } from '../types';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { Reservation, ReservationDetail, Space } from '../types';
 import { formatKoreanDate } from '../utils/dateUtils';
 import { api } from '../services/api';
 import {
   X,
   Calendar,
   Clock,
-  User,
-  FileText,
   Building,
-  Phone,
   Lock,
   Edit3,
   Trash2,
   ShieldAlert,
   Loader2,
   AlertCircle,
+  Briefcase,
 } from 'lucide-react';
 
 interface ReservationDetailModalProps {
   isOpen: boolean;
-  reservation: Reservation | null;
+  reservation: Reservation | ReservationDetail | null;
   spaces: Space[];
   isAdminLoggedIn: boolean;
   onClose: () => void;
@@ -37,24 +35,59 @@ export default function ReservationDetailModal({
   onOpenEdit,
   onOpenCancel,
 }: ReservationDetailModalProps) {
+  const [detail, setDetail] = useState<ReservationDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [authMode, setAuthMode] = useState<'none' | 'edit' | 'cancel'>('none');
   const [password, setPassword] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const isMouseDownOnBackdrop = useRef(false);
 
-  // Reset authentication state whenever modal opens or reservation changes
+  // Fetch reservation detail via API (Space, Date, Time, Department only - excluding userName)
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && reservation?.id) {
       setAuthMode('none');
       setPassword('');
       setErrorMessage('');
       setIsVerifying(false);
+      setIsLoadingDetail(true);
+
+      api
+        .fetchReservationDetail(reservation.id)
+        .then((data) => {
+          setDetail(data);
+        })
+        .catch((err) => {
+          console.warn('Detail fetch fallback to props:', err);
+          // Fallback sanitized object without userName
+          setDetail({
+            id: reservation.id,
+            spaceId: reservation.spaceId,
+            spaceName: reservation.spaceName,
+            date: reservation.date,
+            startTime: reservation.startTime,
+            endTime: reservation.endTime,
+            department: reservation.department,
+            purpose: reservation.purpose,
+            status: reservation.status,
+            cancelReason: reservation.cancelReason,
+            createdAt: reservation.createdAt,
+            updatedAt: reservation.updatedAt,
+            phone: isAdminLoggedIn ? reservation.phone : undefined,
+          });
+        })
+        .finally(() => {
+          setIsLoadingDetail(false);
+        });
+    } else {
+      setDetail(null);
     }
-  }, [isOpen, reservation?.id]);
+  }, [isOpen, reservation?.id, isAdminLoggedIn]);
 
   if (!isOpen || !reservation) return null;
 
-  const isCancelled = reservation.status === 'cancelled';
+  const currentData = detail || reservation;
+  const isCancelled = currentData.status === 'cancelled';
 
   const handleClose = () => {
     setAuthMode('none');
@@ -65,8 +98,8 @@ export default function ReservationDetailModal({
 
   const handleStartAuth = (mode: 'edit' | 'cancel') => {
     if (isAdminLoggedIn) {
-      if (mode === 'edit') onOpenEdit(reservation, undefined);
-      if (mode === 'cancel') onOpenCancel(reservation, undefined);
+      if (mode === 'edit') onOpenEdit(reservation as Reservation, undefined);
+      if (mode === 'cancel') onOpenCancel(reservation as Reservation, undefined);
       return;
     }
     setAuthMode(mode);
@@ -92,9 +125,9 @@ export default function ReservationDetailModal({
       setPassword('');
 
       if (targetMode === 'edit') {
-        onOpenEdit(reservation, verifiedPw);
+        onOpenEdit(reservation as Reservation, verifiedPw);
       } else if (targetMode === 'cancel') {
-        onOpenCancel(reservation, verifiedPw);
+        onOpenCancel(reservation as Reservation, verifiedPw);
       }
     } catch (err: any) {
       setErrorMessage(err.message || '예약 비밀번호가 일치하지 않습니다.');
@@ -107,10 +140,14 @@ export default function ReservationDetailModal({
     <div
       id="detail-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
+      onMouseDown={(e) => {
+        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
           handleClose();
         }
+        isMouseDownOnBackdrop.current = false;
       }}
     >
       <div
@@ -136,6 +173,7 @@ export default function ReservationDetailModal({
             id="detail-modal-close-btn"
             onClick={handleClose}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
+            aria-label="닫기"
           >
             <X className="w-5 h-5" />
           </button>
@@ -143,101 +181,83 @@ export default function ReservationDetailModal({
 
         {/* Content */}
         <div className="p-6 sm:p-8 space-y-6">
-          {/* Status Badge */}
-          <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-            <span className="text-xs font-bold text-slate-500">예약 상태</span>
-            <span
-              className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${
-                isCancelled
-                  ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isCancelled ? 'bg-rose-500' : 'bg-emerald-500'
-                }`}
-              />
-              {isCancelled ? '취소된 예약' : '예약 확정됨'}
-            </span>
-          </div>
-
-          {/* Details List */}
-          <div className="space-y-4 text-xs sm:text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                <Building className="w-4 h-4 text-slate-400" /> 공간
-              </span>
-              <span className="font-bold text-slate-900">
-                {reservation.spaceName}
-              </span>
+          {isLoadingDetail ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <p className="text-xs font-medium text-slate-500">예약 상세 정보를 불러오는 중입니다...</p>
             </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                <Calendar className="w-4 h-4 text-slate-400" /> 날짜
-              </span>
-              <span className="font-bold text-slate-900">
-                {formatKoreanDate(reservation.date, true)}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                <Clock className="w-4 h-4 text-slate-400" /> 시간
-              </span>
-              <span className="font-bold text-slate-900">
-                {reservation.startTime} ~ {reservation.endTime}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                <User className="w-4 h-4 text-slate-400" /> 예약자
-              </span>
-              <span className="font-bold text-slate-900">
-                {reservation.userName}
-              </span>
-            </div>
-
-            {reservation.department && (
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                  <Building className="w-4 h-4 text-slate-400" /> 부서
-                </span>
-                <span className="font-bold text-slate-900">{reservation.department}</span>
-              </div>
-            )}
-
-            {/* Admin view extras */}
-            {isAdminLoggedIn && reservation.phone && (
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 flex items-center gap-1.5 font-medium">
-                  <Phone className="w-4 h-4 text-slate-400" /> 연락처
-                </span>
-                <span className="font-bold text-slate-900">
-                  {reservation.phone}
+          ) : (
+            <>
+              {/* Status Badge */}
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-500">예약 상태</span>
+                <span
+                  className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${
+                    isCancelled
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isCancelled ? 'bg-rose-500' : 'bg-emerald-500'
+                    }`}
+                  />
+                  {isCancelled ? '취소된 예약' : '예약 확정됨'}
                 </span>
               </div>
-            )}
 
-            {/* Purpose */}
-            <div className="pt-2">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium mb-1.5">
-                <FileText className="w-4 h-4 text-slate-400" /> 사용 목적
-              </span>
-              <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-slate-900 font-medium leading-relaxed shadow-2xs">
-                {reservation.purpose}
-              </div>
-            </div>
+              {/* Details List: Only Space, Date, Time, Department */}
+              <div className="space-y-4 text-xs sm:text-sm">
+                {/* 1. 공간 (Space) */}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+                    <Building className="w-4 h-4 text-slate-400" /> 공간
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {currentData.spaceName}
+                  </span>
+                </div>
 
-            {isCancelled && reservation.cancelReason && (
-              <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200/80 text-rose-800 text-xs shadow-2xs">
-                <span className="font-bold block mb-1">취소 사유:</span>
-                <span className="font-medium leading-relaxed">{reservation.cancelReason}</span>
+                {/* 2. 날짜 (Date) */}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+                    <Calendar className="w-4 h-4 text-slate-400" /> 날짜
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {formatKoreanDate(currentData.date, true)}
+                  </span>
+                </div>
+
+                {/* 3. 시간 (Time) */}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+                    <Clock className="w-4 h-4 text-slate-400" /> 시간
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {currentData.startTime} ~ {currentData.endTime}
+                  </span>
+                </div>
+
+                {/* 4. 과/부서 (Department) */}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+                    <Briefcase className="w-4 h-4 text-slate-400" /> 과/부서
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {currentData.department || '미지정'}
+                  </span>
+                </div>
+
+                {isCancelled && currentData.cancelReason && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200/80 text-rose-800 text-xs shadow-2xs">
+                    <span className="font-bold block mb-1">취소 사유:</span>
+                    <span className="font-medium leading-relaxed">{currentData.cancelReason}</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* Password Authentication Sub-Form for Edit/Cancel */}
           {authMode !== 'none' && !isAdminLoggedIn && (
@@ -303,7 +323,7 @@ export default function ReservationDetailModal({
           )}
 
           {/* Action Buttons */}
-          {!isCancelled && authMode === 'none' && (
+          {!isCancelled && authMode === 'none' && !isLoadingDetail && (
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 id="detail-edit-trigger-btn"

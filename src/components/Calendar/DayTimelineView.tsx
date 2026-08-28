@@ -12,7 +12,7 @@ import {
   Ban,
   CheckCircle2,
   Calendar,
-  User,
+  Briefcase,
 } from 'lucide-react';
 
 interface DayTimelineViewProps {
@@ -227,16 +227,17 @@ export default function DayTimelineView({
                       >
                         {occupyingRes.startTime} ~ {occupyingRes.endTime}
                       </span>
-                      <span className="text-slate-300 hidden sm:inline">|</span>
-                      <span className="text-xs sm:text-sm font-normal text-slate-700 truncate min-w-0">
-                        {occupyingRes.purpose}
-                      </span>
-                      <span className="text-slate-300 hidden sm:inline">|</span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-xs sm:text-sm font-normal text-slate-700">
-                          {occupyingRes.userName} 교사
-                        </span>
-                      </div>
+                      {occupyingRes.department && (
+                        <>
+                          <span className="text-slate-300 hidden sm:inline">|</span>
+                          <div className="flex items-center gap-1.5 shrink-0 text-slate-800">
+                            <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-xs sm:text-sm font-semibold text-slate-800">
+                              {occupyingRes.department}
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                     <span className="text-xs text-blue-600 hover:underline font-semibold shrink-0 ml-auto flex items-center gap-1">
                       상세/수정/취소 &rarr;

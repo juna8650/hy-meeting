@@ -36,6 +36,26 @@ export interface Reservation {
   cancelReason?: string;
 }
 
+export interface ReservationDetail {
+  id: string;
+  spaceId: SpaceId;
+  spaceName: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  department?: string; // 부서/담당 업무
+  purpose?: string; // 사용 목적
+  status: ReservationStatus;
+  createdAt?: string;
+  updatedAt?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  // Note: userName, phone, passwordHash are omitted for privacy on public detail view
+  // (Admin session may receive userName and phone)
+  userName?: string;
+  phone?: string;
+}
+
 export interface BlockedDate {
   id: string;
   date: string; // YYYY-MM-DD

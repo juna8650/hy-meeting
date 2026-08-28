@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
 import { Reservation } from '../types';
 import { formatKoreanDate } from '../utils/dateUtils';
 import { api } from '../services/api';
@@ -34,6 +34,7 @@ export default function ReservationCancelModal({
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const isMouseDownOnBackdrop = useRef(false);
 
   if (!isOpen || !reservation) return null;
 
@@ -67,10 +68,14 @@ export default function ReservationCancelModal({
     <div
       id="cancel-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
+      onMouseDown={(e) => {
+        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
           onClose();
         }
+        isMouseDownOnBackdrop.current = false;
       }}
     >
       <div

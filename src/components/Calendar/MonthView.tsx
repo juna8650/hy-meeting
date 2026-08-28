@@ -194,7 +194,6 @@ export default function MonthView({
                     </div>
                   ) : (
                     dayReservations.map((res) => {
-                      const showOnlyTime = dayReservations.length >= 3;
                       return (
                         <div
                           key={res.id}
@@ -208,14 +207,14 @@ export default function MonthView({
                               ? 'bg-blue-50/90 text-blue-950 border-blue-200 hover:bg-blue-100 hover:border-blue-300 hover:shadow-xs'
                               : 'bg-indigo-50/90 text-indigo-950 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 hover:shadow-xs'
                           }`}
-                          title={`${res.startTime}~${res.endTime} ${res.userName} (${res.purpose})`}
+                          title={`${res.startTime}~${res.endTime} ${res.department ? `[${res.department}]` : ''}`}
                         >
-                          <div className="font-medium text-[10px] sm:text-xs text-slate-700 whitespace-nowrap overflow-visible">
+                          <div className="font-semibold text-[10px] sm:text-xs text-slate-800 whitespace-nowrap overflow-visible">
                             {res.startTime}~{res.endTime}
                           </div>
-                          {!showOnlyTime && (
-                            <div className="text-slate-600 text-[10px] sm:text-xs font-normal truncate hidden sm:block mt-0.5 opacity-90">
-                              {res.purpose}
+                          {res.department && (
+                            <div className="text-slate-600 text-[10px] sm:text-xs font-medium truncate mt-0.5 opacity-90">
+                              {res.department}
                             </div>
                           )}
                         </div>

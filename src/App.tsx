@@ -103,6 +103,7 @@ export default function App() {
   };
 
   const handleAdminLogout = () => {
+    api.adminLogout();
     setIsAdminLoggedIn(false);
     if (currentView === 'admin') {
       setCurrentView('home');

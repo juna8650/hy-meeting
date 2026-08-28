@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Reservation } from '../types';
 import { formatKoreanDate } from '../utils/dateUtils';
 import confetti from 'canvas-confetti';
@@ -30,6 +30,8 @@ export default function ReservationSuccessModal({
   onEdit,
   onCancel,
 }: ReservationSuccessModalProps) {
+  const isMouseDownOnBackdrop = useRef(false);
+
   useEffect(() => {
     if (isOpen) {
       try {
@@ -48,10 +50,14 @@ export default function ReservationSuccessModal({
     <div
       id="success-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
+      onMouseDown={(e) => {
+        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
           onClose();
         }
+        isMouseDownOnBackdrop.current = false;
       }}
     >
       <div

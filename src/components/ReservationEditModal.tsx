@@ -10,7 +10,6 @@ import {
   User,
   FileText,
   Building,
-  Phone,
   AlertCircle,
   CheckCircle2,
   Loader2,
@@ -43,7 +42,6 @@ export default function ReservationEditModal({
   const [userName, setUserName] = useState('');
   const [purpose, setPurpose] = useState('');
   const [department, setDepartment] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const [isCheckingConflict, setIsCheckingConflict] = useState(false);
@@ -52,6 +50,7 @@ export default function ReservationEditModal({
   const [errorMessage, setErrorMessage] = useState('');
 
   const wasOpenRef = useRef(false);
+  const isMouseDownOnBackdrop = useRef(false);
 
   useEffect(() => {
     if (isOpen && reservation && (!wasOpenRef.current || reservation.id)) {
@@ -62,7 +61,6 @@ export default function ReservationEditModal({
       setUserName(reservation.userName);
       setPurpose(reservation.purpose);
       setDepartment(reservation.department || '');
-      setPhone(reservation.phone || '');
       setPassword(verifiedPassword || '');
       setErrorMessage('');
       setConflictResult(null);
@@ -140,6 +138,10 @@ export default function ReservationEditModal({
       setErrorMessage('예약자명을 입력해주세요.');
       return;
     }
+    if (!department.trim()) {
+      setErrorMessage('과/부서를 입력해주세요.');
+      return;
+    }
     if (!purpose.trim()) {
       setErrorMessage('사용 목적을 입력해주세요.');
       return;
@@ -168,7 +170,6 @@ export default function ReservationEditModal({
         userName: userName.trim(),
         purpose: purpose.trim(),
         department: department.trim() || undefined,
-        phone: phone.trim() || undefined,
         password: isAdminLoggedIn ? undefined : password.trim(),
         isAdminOverride: isAdminLoggedIn,
       });
@@ -185,10 +186,14 @@ export default function ReservationEditModal({
     <div
       id="edit-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
+      onMouseDown={(e) => {
+        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onMouseUp={(e) => {
+        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
           onClose();
         }
+        isMouseDownOnBackdrop.current = false;
       }}
     >
       <div
@@ -327,21 +332,38 @@ export default function ReservationEditModal({
             </div>
           </div>
 
-          {/* User Name & Purpose */}
+          {/* User Name & Department (Same line) + Purpose */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-blue-600" />
-                예약자명
-              </label>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="예: 이한양"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-blue-600" />
+                  예약자명
+                </label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="예: 이한양"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-blue-600" />
+                  과/부서 <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="예: 교무기획부"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  required
+                />
+              </div>
             </div>
 
             <div>
@@ -357,36 +379,6 @@ export default function ReservationEditModal({
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 required
               />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-slate-400" />
-                  부서
-                </label>
-                <input
-                  type="text"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="예: 교무기획부"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                  핸드폰 또는 교내 유선번호 (선택)
-                </label>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="예: 010-1234-5678"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
-              </div>
             </div>
           </div>
 

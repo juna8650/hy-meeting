@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
-  User,
+  Briefcase,
   Building,
   Filter,
   CheckCircle2,
@@ -50,13 +50,11 @@ export default function ReservationLookup({
         return false;
       }
 
-      // Search term
+      // Search term (Search by department only)
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase().trim();
-        const matchName = r.userName.toLowerCase().includes(q);
-        const matchPurpose = r.purpose.toLowerCase().includes(q);
         const matchDept = r.department ? r.department.toLowerCase().includes(q) : false;
-        if (!matchName && !matchPurpose && !matchDept) return false;
+        if (!matchDept) return false;
       }
 
       return true;
@@ -85,7 +83,7 @@ export default function ReservationLookup({
           </div>
         </div>
         <div className="text-xs text-slate-500 font-medium bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60 shadow-2xs">
-          예약자명이나 목적을 검색하여 본인 예약을 조회하고 수정/취소할 수 있습니다.
+          과/부서명을 검색하여 예약을 확인하고 수정/취소할 수 있습니다.
         </div>
       </div>
 
@@ -100,7 +98,7 @@ export default function ReservationLookup({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="예약자명, 사용목적, 부서 검색"
+              placeholder="과/부서 검색 (예: 교무기획부)"
               className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
             />
           </div>
@@ -215,9 +213,10 @@ export default function ReservationLookup({
                     </span>
                   </div>
 
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900 mb-2.5 line-clamp-1 tracking-tight">
-                    {res.purpose}
-                  </h4>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold mb-2.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 w-fit">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{res.department || '과/부서 미지정'}</span>
+                  </div>
 
                   <div className="space-y-1.5 text-xs text-slate-600">
                     <div className="flex items-center gap-2">
@@ -229,14 +228,6 @@ export default function ReservationLookup({
                       <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="font-semibold text-slate-800">
                         {res.startTime} ~ {res.endTime}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="font-semibold text-slate-800">
-                        {res.userName}
-                        {res.department ? ` (${res.department})` : ''}
                       </span>
                     </div>
                   </div>

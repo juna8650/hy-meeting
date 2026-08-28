@@ -158,8 +158,8 @@ export default function HomeView({
                       <Clock className="w-3.5 h-3.5 text-blue-600" />
                       {res.startTime} ~ {res.endTime}
                     </span>
-                    <span className="text-slate-700 font-medium text-sm sm:text-base truncate flex-1 min-w-0">
-                      {res.purpose}
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base truncate flex-1 min-w-0">
+                      {res.department || '과/부서 미지정'}
                     </span>
                   </div>
                 ))}
@@ -198,8 +198,8 @@ export default function HomeView({
                       <Clock className="w-3.5 h-3.5 text-indigo-600" />
                       {res.startTime} ~ {res.endTime}
                     </span>
-                    <span className="text-slate-700 font-medium text-sm sm:text-base truncate flex-1 min-w-0">
-                      {res.purpose}
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base truncate flex-1 min-w-0">
+                      {res.department || '과/부서 미지정'}
                     </span>
                   </div>
                 ))}

@@ -1,6 +1,7 @@
 import {
   Space,
   Reservation,
+  ReservationDetail,
   BlockedDate,
   CreateReservationInput,
   UpdateReservationInput,
@@ -10,6 +11,34 @@ import {
 import { hashPassword } from '../utils/crypto';
 
 const STORAGE_KEY = 'hanyang_reservation_db_v2';
+const ADMIN_TOKEN_KEY = 'hanyang_admin_session_token';
+
+// In-memory admin token
+let currentAdminToken: string | null = null;
+if (typeof window !== 'undefined' && window.sessionStorage) {
+  currentAdminToken = window.sessionStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+function setAdminToken(token: string | null) {
+  currentAdminToken = token;
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    if (token) {
+      window.sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+    } else {
+      window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
+  }
+}
+
+function getAdminAuthHeaders(): Record<string, string> {
+  if (currentAdminToken) {
+    return {
+      Authorization: `Bearer ${currentAdminToken}`,
+      'x-admin-token': currentAdminToken,
+    };
+  }
+  return {};
+}
 
 interface LocalDB {
   adminPasswordHash: string;
@@ -25,10 +54,10 @@ function getDefaultLocalDB(): LocalDB {
       {
         id: 'meeting-room',
         name: '회의실',
-        shortDescription: '교직원 회의, 분과별 협의회, 소규모 연수 공간',
+        shortDescription: '교육활동 협의, 소규모 연수 및 행사 공간',
         description:
           '본관 2층에 위치한 교직원 전용 회의실입니다. 대형 고화질 멀티비전과 회의 테이블, 음향 설비가 구비되어 있어 원활한 소통과 협의가 가능합니다.',
-        capacity: '최대 20인',
+        capacity: '20인 기준',
         equipment: ['대형 고화질 멀티비전', '회의 테이블', '스피커', '강연대'],
         openTime: '08:30',
         closeTime: '18:30',
@@ -42,13 +71,13 @@ function getDefaultLocalDB(): LocalDB {
         name: '시청각실',
         shortDescription: '대규모 교직원 연수, 특강, 학부모 설명회, 행사 공간',
         description:
-          '본관 2층에 위치한 대규모 다목적 시청각실입니다. 120석 좌석과 대형 고화질 멀티비전, 전문 방송 음향 설비를 완비하여 다양한 학교 행사를 지원합니다.',
-        capacity: '최대 120인',
+          '본관 2층에 위치한 대규모 다목적 시청각실입니다. 80석 좌석과 대형 고화질 멀티비전, 전문 방송 음향 설비를 완비하여 다양한 학교 행사를 지원합니다.',
+        capacity: '80인 기준',
         equipment: [
           '대형 고화질 멀티비전',
-          '테이블 & 120석',
-          '강연대 & 유선 마이크',
-          '전문 방송 믹서 & 오디오 시스템',
+          '전자 교탁 및 TV',
+          '강연대 및 유선 마이크',
+          '오디오 믹서 및 스피커',
         ],
         openTime: '08:30',
         closeTime: '18:30',
@@ -222,7 +251,6 @@ async function tryServerFetch<T>(url: string, options?: RequestInit): Promise<T 
     const res = await fetch(url, options);
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
-      // Server returned HTML (e.g. 404 page or index.html in static SPA hosting)
       return null;
     }
     const data = await res.json();
@@ -234,16 +262,24 @@ async function tryServerFetch<T>(url: string, options?: RequestInit): Promise<T 
     }
     return data;
   } catch (err: any) {
-    // If it's a specific API business validation error thrown above, rethrow it
     if (err.message && !err.message.includes('JSON') && !err.message.includes('fetch')) {
       throw err;
     }
-    // Otherwise it's a network/static hosting issue -> return null to fallback to local store
     return null;
   }
 }
 
 export const api = {
+  // Get admin token if authenticated
+  getAdminToken(): string | null {
+    return currentAdminToken;
+  },
+
+  // Admin Logout
+  adminLogout(): void {
+    setAdminToken(null);
+  },
+
   // Get all spaces
   async fetchSpaces(): Promise<Space[]> {
     const serverData = await tryServerFetch<{ success: boolean; spaces: Space[] }>('/api/spaces');
@@ -262,7 +298,10 @@ export const api = {
       `/api/spaces/${id}`,
       {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAdminAuthHeaders(),
+        },
         body: JSON.stringify(updates),
       }
     );
@@ -339,6 +378,48 @@ export const api = {
     });
 
     return list;
+  },
+
+  // Get single reservation detail for modal view (delivers space, date, time, department; userName excluded for non-admin)
+  async fetchReservationDetail(id: string): Promise<ReservationDetail> {
+    const serverData = await tryServerFetch<{ success: boolean; reservation: ReservationDetail }>(
+      `/api/reservations/${id}`,
+      {
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+      }
+    );
+
+    if (serverData?.success && serverData.reservation) {
+      return serverData.reservation;
+    }
+
+    // Local DB fallback: Construct sanitized detail
+    const db = getLocalDB();
+    const found = db.reservations.find((r) => r.id === id);
+    if (!found) throw new Error('예약 정보를 찾을 수 없습니다.');
+
+    if (currentAdminToken) {
+      const { passwordHash, ...adminData } = found;
+      return adminData;
+    }
+
+    // Public / standard user: Only space, date, time, department, purpose, status, cancelReason (NO userName, phone, passwordHash)
+    return {
+      id: found.id,
+      spaceId: found.spaceId,
+      spaceName: found.spaceName,
+      date: found.date,
+      startTime: found.startTime,
+      endTime: found.endTime,
+      department: found.department,
+      purpose: found.purpose,
+      status: found.status,
+      cancelReason: found.cancelReason,
+      createdAt: found.createdAt,
+      updatedAt: found.updatedAt,
+    };
   },
 
   // Real-time conflict check
@@ -504,7 +585,10 @@ export const api = {
       `/api/reservations/${id}`,
       {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(input.isAdminOverride ? getAdminAuthHeaders() : {}),
+        },
         body: JSON.stringify(input),
       }
     );
@@ -582,7 +666,10 @@ export const api = {
   ): Promise<void> {
     const serverData = await tryServerFetch<{ success: boolean }>(`/api/reservations/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.isAdminOverride ? getAdminAuthHeaders() : {}),
+      },
       body: JSON.stringify(options || {}),
     });
 
@@ -654,7 +741,10 @@ export const api = {
       '/api/blocked-dates',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAdminAuthHeaders(),
+        },
         body: JSON.stringify({ date, spaceId, reason, type }),
       }
     );
@@ -684,6 +774,9 @@ export const api = {
   async deleteBlockedDate(id: string): Promise<void> {
     await tryServerFetch<{ success: boolean }>(`/api/blocked-dates/${id}`, {
       method: 'DELETE',
+      headers: {
+        ...getAdminAuthHeaders(),
+      },
     });
 
     const db = getLocalDB();
@@ -703,6 +796,9 @@ export const api = {
     );
 
     if (serverData?.success) {
+      if (serverData.token) {
+        setAdminToken(serverData.token);
+      }
       return serverData;
     }
 
@@ -716,14 +812,19 @@ export const api = {
     if (!isValid) {
       throw new Error('관리자 비밀번호가 일치하지 않습니다.');
     }
-    return { success: true, token: 'local-admin-token' };
+    const localToken = 'local-admin-token';
+    setAdminToken(localToken);
+    return { success: true, token: localToken };
   },
 
   // Admin change password
   async adminChangePassword(currentPassword: string, newPassword: string): Promise<void> {
     const serverData = await tryServerFetch<{ success: boolean }>('/api/admin/password', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminAuthHeaders(),
+      },
       body: JSON.stringify({ currentPassword, newPassword }),
     });
 
@@ -783,4 +884,3 @@ export const api = {
     };
   },
 };
-
