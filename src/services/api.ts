@@ -10,7 +10,7 @@ import {
 } from '../types';
 import { hashPassword } from '../utils/crypto';
 
-const STORAGE_KEY = 'hanyang_reservation_db_v2';
+const STORAGE_KEY = 'hanyang_reservation_db_v3';
 const ADMIN_TOKEN_KEY = 'hanyang_admin_session_token';
 
 // In-memory admin token
@@ -49,7 +49,7 @@ interface LocalDB {
 
 function getDefaultLocalDB(): LocalDB {
   return {
-    adminPasswordHash: 'c2e71fa0c2299fc857790b8f041ffdf7eb098e94a50d2bb0c4f8bf018868ad94', // admin1234
+    adminPasswordHash: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270', // admin1234
     spaces: [
       {
         id: 'meeting-room',
@@ -207,17 +207,21 @@ function getDefaultLocalDB(): LocalDB {
 }
 
 function getLocalDB(): LocalDB {
+  const defaultDB = getDefaultLocalDB();
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed: LocalDB = JSON.parse(saved);
+        // Always sync spaces metadata to latest configured descriptions and capacities
+        parsed.spaces = defaultDB.spaces;
+        saveLocalDB(parsed);
+        return parsed;
       }
     }
   } catch (e) {
     console.warn('LocalStorage read error:', e);
   }
-  const defaultDB = getDefaultLocalDB();
   saveLocalDB(defaultDB);
   return defaultDB;
 }
