@@ -1,6 +1,6 @@
 {
-  "name": "한양과기고 공간 예약",
-  "short_name": "회의실 예약",
+  "name": "회의실 예약 시스템",
+  "short_name": "회의실 예약 시스템",
   "description": "한양과학기술고등학교 교직원용 회의실 및 시청각실 공간 예약 시스템",
   "start_url": "/",
   "display": "standalone",
