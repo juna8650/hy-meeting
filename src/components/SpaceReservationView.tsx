@@ -205,8 +205,8 @@ export default function SpaceReservationView({
         {/* Selected Date Summary Sidebar (1 col on lg) */}
         <div className="lg:col-span-1 bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4 sticky top-24">
           <div className="pb-3 border-b border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Selected Date
+            <span className="text-xs font-bold text-slate-500 block mb-1">
+              선택한 날짜
             </span>
             <div className="flex flex-wrap items-center gap-2 mt-0.5">
               <h4 className={`text-base font-bold ${

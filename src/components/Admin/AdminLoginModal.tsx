@@ -65,9 +65,6 @@ export default function AdminLoginModal({
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-xs sm:text-[13px] text-amber-300 font-bold uppercase tracking-wider block">
-                Administrator
-              </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">관리자 로그인</h3>
             </div>
           </div>

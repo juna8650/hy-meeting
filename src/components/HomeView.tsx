@@ -65,7 +65,7 @@ export default function HomeView({
               className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-[0.98] text-white font-semibold text-xs sm:text-sm border border-white/20 transition-all backdrop-blur-sm shadow-sm"
             >
               <Search className="w-4 h-4 text-blue-300" />
-              내 예약 조회 / 수정 / 취소
+              예약 조회 / 수정 / 취소
             </button>
           </div>
         </div>
@@ -74,10 +74,10 @@ export default function HomeView({
       {/* Main Section: Space Selection */}
       <section>
         <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100 mb-2 inline-block">
-            Space Selection
+          <span className="text-xs sm:text-[13px] font-bold text-blue-700 bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200/80 mb-2.5 inline-block shadow-3xs tracking-wider uppercase">
+            SPACE SELECTION
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-800 tracking-tight mt-1">
             예약할 공간을 선택하세요
           </h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-2">

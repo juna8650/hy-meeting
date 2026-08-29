@@ -247,9 +247,6 @@ export default function ReservationModal({
               )}
             </div>
             <div>
-              <span className="text-xs sm:text-[13px] text-blue-300 font-bold uppercase tracking-wider block">
-                {activeSpace.id === 'meeting-room' ? 'Meeting Room' : 'Audiovisual Hall'}
-              </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 {activeSpace.name} 예약 신청
               </h3>

@@ -151,9 +151,6 @@ export default function ReservationDetailModal({
               <Calendar className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-xs sm:text-[13px] text-blue-300 font-bold uppercase tracking-wider block">
-                Reservation Details
-              </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">예약 상세 정보</h3>
             </div>
           </div>

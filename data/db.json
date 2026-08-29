@@ -57,6 +57,21 @@
       "updatedAt": "2026-08-29T11:59:38.764Z",
       "cancelledAt": "2026-08-29T11:59:38.764Z",
       "cancelReason": "일정 변경으로 취소"
+    },
+    {
+      "id": "res-1788006077408-cf4fd9",
+      "spaceId": "meeting-room",
+      "spaceName": "회의실",
+      "date": "2026-08-29",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "userName": "이한양",
+      "purpose": "교과협의회",
+      "department": "교무기획부",
+      "passwordHash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "status": "confirmed",
+      "createdAt": "2026-08-29T12:21:17.408Z",
+      "updatedAt": "2026-08-29T12:21:17.408Z"
     }
   ],
   "blockedDates": [

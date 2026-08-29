@@ -49,7 +49,7 @@ interface LocalDB {
 
 function getDefaultLocalDB(): LocalDB {
   return {
-    adminPasswordHash: 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270', // admin1234
+    adminPasswordHash: 'edce3e4b9a0d26036436a6206b342611a1eef112bc99d9ea59328dae88ad5eb6', // hyadmin2026
     spaces: [
       {
         id: 'meeting-room',
@@ -695,7 +695,7 @@ export const api = {
     const db = getLocalDB();
     const hashed = await hashPassword(password);
     const isValid =
-      password === 'admin1234' ||
+      password === 'hyadmin2026' ||
       hashed === db.adminPasswordHash ||
       db.adminPasswordHash === password;
 
@@ -725,7 +725,7 @@ export const api = {
     const db = getLocalDB();
     const currentHashed = await hashPassword(currentPassword);
     const isValid =
-      currentPassword === 'admin1234' ||
+      currentPassword === 'hyadmin2026' ||
       currentHashed === db.adminPasswordHash ||
       db.adminPasswordHash === currentPassword;
 
