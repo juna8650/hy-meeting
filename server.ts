@@ -255,7 +255,7 @@ interface DatabaseSchema {
 }
 
 function getDefaultDatabase(): DatabaseSchema {
-  const defaultAdminHash = hashPassword('admin1234');
+  const defaultAdminHash = hashPassword('hyadmin2026');
   const samplePassHash = hashPassword('1234');
 
   return {

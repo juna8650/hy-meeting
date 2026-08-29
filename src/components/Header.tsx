@@ -65,16 +65,16 @@ export default function Header({
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && onNavigateHome()}
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white p-0.5 flex items-center justify-center shadow-md shadow-black/30 border border-white/30 group-hover:scale-105 transition-all shrink-0 overflow-hidden">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/10 p-0.5 flex items-center justify-center shadow-md shadow-black/30 border border-white/20 group-hover:scale-105 transition-all shrink-0 overflow-hidden">
                 <img
-                  src="https://i.ibb.co/Y7gMw8Fj/2.png"
-                  alt="한양과학기술고등학교 로고"
-                  className="w-full h-full object-contain rounded-full"
+                  src="/app-icon.png"
+                  alt="한양과학기술고등학교 공간 예약 시스템 아이콘"
+                  className="w-full h-full object-cover rounded-xl"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src !== window.location.origin + '/로고2.png') {
-                      target.src = '/로고2.png';
+                    if (target.src !== window.location.origin + '/icon.png') {
+                      target.src = '/icon.png';
                     } else {
                       target.style.display = 'none';
                       if (target.nextElementSibling) {
@@ -83,7 +83,7 @@ export default function Header({
                     }
                   }}
                 />
-                <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full">
+                <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl">
                   <Building2 className="w-6 h-6 text-white" />
                 </div>
               </div>

@@ -1,5 +1,5 @@
 {
-  "adminPasswordHash": "ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270",
+  "adminPasswordHash": "edce3e4b9a0d26036436a6206b342611a1eef112bc99d9ea59328dae88ad5eb6",
   "spaces": [
     {
       "id": "meeting-room",
@@ -40,6 +40,41 @@
       "icon": "projector"
     }
   ],
-  "reservations": [],
-  "blockedDates": []
+  "reservations": [
+    {
+      "id": "res-1788004758796-8fa654",
+      "spaceId": "meeting-room",
+      "spaceName": "회의실",
+      "date": "2026-09-01",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "userName": "홍길동",
+      "purpose": "신학기 학사운영 협의회",
+      "department": "교무기획부",
+      "passwordHash": "b55c8792d1ce458e279308835f8a97b580263503e76e1998e279703e35ad0c2e",
+      "status": "cancelled",
+      "createdAt": "2026-08-29T11:59:18.796Z",
+      "updatedAt": "2026-08-29T11:59:38.764Z",
+      "cancelledAt": "2026-08-29T11:59:38.764Z",
+      "cancelReason": "일정 변경으로 취소"
+    }
+  ],
+  "blockedDates": [
+    {
+      "id": "block-1788004786150-wclv",
+      "date": "2026-09-05",
+      "spaceId": "all",
+      "reason": "학교 대청소 및 소독의 날",
+      "type": "blocked",
+      "createdAt": "2026-08-29T11:59:46.150Z"
+    },
+    {
+      "id": "block-1788004788997-th3h",
+      "date": "2026-09-05",
+      "spaceId": "all",
+      "reason": "학교 대청소 및 소독의 날",
+      "type": "blocked",
+      "createdAt": "2026-08-29T11:59:48.997Z"
+    }
+  ]
 }

@@ -73,16 +73,16 @@ export default function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs text-left ${
+        className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-slate-200 text-base font-medium text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs text-left ${
           isOpen ? 'bg-white ring-2 ring-blue-500/20 border-blue-500' : ''
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-center gap-2.5 truncate">
           {icon && <span className="text-slate-400 shrink-0">{icon}</span>}
           {selectedOption?.icon && <span className="shrink-0">{selectedOption.icon}</span>}
-          <span className="truncate">
+          <span className="truncate text-base">
             {selectedOption ? selectedOption.label : placeholder || '선택하세요'}
           </span>
         </div>
@@ -96,7 +96,7 @@ export default function CustomSelect({
       {/* Rounded Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute z-50 left-0 right-0 mt-1.5 p-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-xl max-h-64 overflow-y-auto space-y-0.5 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-50 left-0 right-0 mt-1.5 p-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-xl max-h-64 overflow-y-auto space-y-1 animate-in fade-in zoom-in-95 duration-150"
           role="listbox"
         >
           {options.map((option) => {
@@ -109,7 +109,7 @@ export default function CustomSelect({
                 aria-selected={isSelected}
                 disabled={option.disabled}
                 onClick={() => handleSelect(option.value, option.disabled)}
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-left ${
+                className={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-base font-medium transition-all text-left ${
                   option.disabled
                     ? 'opacity-40 cursor-not-allowed text-slate-400'
                     : isSelected
@@ -123,11 +123,11 @@ export default function CustomSelect({
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {option.badge && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal">
                       {option.badge}
                     </span>
                   )}
-                  {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                  {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
                 </div>
               </button>
             );

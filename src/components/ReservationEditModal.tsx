@@ -50,7 +50,6 @@ export default function ReservationEditModal({
   const [errorMessage, setErrorMessage] = useState('');
 
   const wasOpenRef = useRef(false);
-  const isMouseDownOnBackdrop = useRef(false);
 
   useEffect(() => {
     if (isOpen && reservation && (!wasOpenRef.current || reservation.id)) {
@@ -186,58 +185,48 @@ export default function ReservationEditModal({
     <div
       id="edit-modal-backdrop"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      onMouseDown={(e) => {
-        isMouseDownOnBackdrop.current = e.target === e.currentTarget;
-      }}
-      onMouseUp={(e) => {
-        if (isMouseDownOnBackdrop.current && e.target === e.currentTarget) {
-          onClose();
-        }
-        isMouseDownOnBackdrop.current = false;
-      }}
     >
       <div
         id="edit-modal-content"
-        onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/10 w-full max-w-xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200"
       >
         {/* Header */}
-        <div className="bg-slate-900 text-white p-6 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-slate-900 text-white p-5 sm:p-6 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 ring-1 ring-blue-400/30 flex items-center justify-center text-white font-bold shadow-xs">
-              <Edit3 className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 ring-1 ring-blue-400/30 flex items-center justify-center text-white font-bold shadow-xs">
+              <Edit3 className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[11px] text-blue-300 font-bold uppercase tracking-wider block">
+              <span className="text-xs sm:text-[13px] text-blue-300 font-bold uppercase tracking-wider block">
                 Modify Reservation
               </span>
-              <h3 className="text-lg font-bold text-white tracking-tight">예약 정보 수정</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">예약 정보 수정</h3>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all"
+            className="p-2.5 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-8 space-y-6 max-h-[80vh] overflow-y-auto">
           {errorMessage && (
-            <div className="p-4 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2.5 shadow-2xs">
-              <AlertCircle className="w-4 h-4 text-rose-600 mt-0.5 shrink-0" />
+            <div className="p-4 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-800 text-sm sm:text-base flex items-start gap-2.5 shadow-2xs">
+              <AlertCircle className="w-5 h-5 text-rose-600 mt-0.5 shrink-0" />
               <div className="font-semibold">{errorMessage}</div>
             </div>
           )}
 
-          {/* Space & Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Space & Date (Mobile 1-col, Desktop 2-col) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-blue-600" />
-                예약 공간
+              <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+                <Building className="w-4 h-4 text-blue-600" />
+                <span>예약 공간</span>
               </label>
               <CustomSelect
                 value={spaceId}
@@ -255,41 +244,41 @@ export default function ReservationEditModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                예약 날짜
+              <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
+                <span>예약 날짜</span>
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-900 bg-slate-50/60 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-base font-medium text-slate-900 bg-slate-50/60 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                 required
               />
             </div>
           </div>
 
           {/* Time interval */}
-          <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-blue-600" />
+          <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-3.5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <label className="text-[15px] sm:text-base font-semibold text-slate-800 flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-blue-600" />
                 <span>예약 시간</span>
-                <span className="text-[11px] font-normal text-slate-500">
+                <span className="text-xs sm:text-sm font-normal text-slate-500">
                   (운영 {activeSpace.openTime} ~ {activeSpace.closeTime})
                 </span>
               </label>
               {isCheckingConflict && (
-                <span className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
-                  <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                <span className="text-xs sm:text-sm text-slate-500 flex items-center gap-1 font-medium">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
                   중복 검사 중...
                 </span>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <span className="text-[11px] text-slate-500 block mb-1 font-semibold">시작 시간</span>
+                <span className="text-xs sm:text-sm text-slate-600 block mb-1.5 font-semibold">시작 시간</span>
                 <CustomSelect
                   value={startTime}
                   onChange={(val) => handleStartTimeChange(val)}
@@ -298,7 +287,7 @@ export default function ReservationEditModal({
               </div>
 
               <div>
-                <span className="text-[11px] text-slate-500 block mb-1 font-semibold">종료 시간</span>
+                <span className="text-xs sm:text-sm text-slate-600 block mb-1.5 font-semibold">종료 시간</span>
                 <CustomSelect
                   value={endTime}
                   onChange={(val) => setEndTime(val)}
@@ -312,71 +301,72 @@ export default function ReservationEditModal({
             </div>
 
             {/* Real-time Conflict Alert - Stable Container */}
-            <div className="min-h-[42px] flex items-center">
+            <div className="min-h-[46px] flex items-center">
               {conflictResult?.hasConflict ? (
-                <div className="w-full p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
+                <div className="w-full p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm sm:text-[15px] font-medium flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span>{conflictResult.message}</span>
                 </div>
               ) : isCheckingConflict ? (
-                <div className="w-full p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs font-medium flex items-center gap-1.5">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                <div className="w-full p-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-sm sm:text-[15px] font-medium flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                   <span>예약 가능 여부 확인 중...</span>
                 </div>
               ) : conflictResult ? (
-                <div className="w-full p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="w-full p-3 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-sm sm:text-[15px] font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>선택하신 시간에 예약이 가능합니다.</span>
                 </div>
               ) : null}
             </div>
           </div>
 
-          {/* User Name & Department (Same line) + Purpose */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* User Name & Department (Mobile 1-col, Desktop 2-col) + Purpose */}
+          <div className="space-y-4 sm:space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-blue-600" />
-                  예약자명
+                <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-blue-600" />
+                  <span>예약자명</span>
                 </label>
                 <input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="예: 이한양"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-base text-slate-900 placeholder:text-[15px] sm:placeholder:text-base bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-blue-600" />
-                  과/부서 <span className="text-rose-500">*</span>
+                <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+                  <Building className="w-4 h-4 text-blue-600" />
+                  <span>과/부서</span>
+                  <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
                   placeholder="예: 교무기획부"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-base text-slate-900 placeholder:text-[15px] sm:placeholder:text-base bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
-                사용 목적
+              <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span>사용 목적</span>
               </label>
               <input
                 type="text"
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 placeholder="예: 교과협의회"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-base text-slate-900 placeholder:text-[15px] sm:placeholder:text-base bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                 required
               />
             </div>
@@ -384,7 +374,7 @@ export default function ReservationEditModal({
 
           {!isAdminLoggedIn && !verifiedPassword && (
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-[15px] sm:text-base font-semibold text-slate-800 mb-2">
                 예약 비밀번호 확인
               </label>
               <input
@@ -392,7 +382,7 @@ export default function ReservationEditModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="예약 시 설정한 비밀번호"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-base text-slate-900 placeholder:text-[15px] sm:placeholder:text-base bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
                 required
               />
             </div>
@@ -403,19 +393,19 @@ export default function ReservationEditModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+              className="px-5 py-3 text-base font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
             >
               닫기
             </button>
             <button
               type="submit"
               disabled={isSubmitting || (conflictResult?.hasConflict ?? false)}
-              className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+              className="px-7 py-3 rounded-xl text-base sm:text-[17px] font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  수정 중...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>수정 중...</span>
                 </>
               ) : (
                 '수정 완료'
