@@ -59,38 +59,36 @@ export default function SpaceReservationView({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Top Header & Breadcrumb */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-3xl border border-slate-200/90 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              id="back-to-home-btn"
-              onClick={onNavigateHome}
-              className="p-2 sm:p-2.5 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs sm:text-sm border border-slate-200/80 shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>홈으로</span>
-            </button>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 sm:gap-4 flex-wrap sm:flex-nowrap">
+          <button
+            id="back-to-home-btn"
+            onClick={onNavigateHome}
+            className="p-2 sm:p-2.5 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs sm:text-sm border border-slate-200/80 shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>홈으로</span>
+          </button>
 
-            <div
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xs border shrink-0 ${
-                isMeeting
-                  ? 'bg-blue-50 text-blue-600 border-blue-200'
-                  : 'bg-indigo-50 text-indigo-600 border-indigo-200'
-              }`}
-            >
-              {isMeeting ? <DoorClosed className="w-5 h-5 sm:w-6 sm:h-6" /> : <Tv className="w-5 h-5 sm:w-6 sm:h-6" />}
-            </div>
+          <div
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xs border shrink-0 ${
+              isMeeting
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-indigo-50 text-indigo-600 border-indigo-200'
+            }`}
+          >
+            {isMeeting ? <DoorClosed className="w-5 h-5 sm:w-6 sm:h-6" /> : <Tv className="w-5 h-5 sm:w-6 sm:h-6" />}
+          </div>
 
-            <div>
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900">
-                {space.name} 예약 현황
-              </h2>
-            </div>
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900 whitespace-nowrap break-keep tracking-tight">
+              {space.name} 예약 현황
+            </h2>
           </div>
         </div>
 
         {/* Space Switcher & Action */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 shrink-0">
           {/* Switch space button */}
           {allSpaces
             .filter((s) => s.id !== space.id)
@@ -98,7 +96,7 @@ export default function SpaceReservationView({
               <button
                 key={otherSpace.id}
                 onClick={() => onSelectSpace(otherSpace.id)}
-                className="flex-1 sm:flex-initial justify-center px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all flex items-center gap-1.5 active:scale-95"
+                className="flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
               >
                 <span>{otherSpace.name}로 전환</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -109,7 +107,7 @@ export default function SpaceReservationView({
           <button
             id="space-page-book-btn"
             onClick={() => onOpenBookingModal(selectedDate)}
-            className={`flex-1 sm:flex-initial justify-center px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm md:text-base font-bold text-white shadow-sm flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95 ${
+            className={`flex-1 sm:flex-initial justify-center px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm md:text-base font-bold text-white shadow-sm flex items-center gap-1.5 sm:gap-2 transition-all active:scale-95 whitespace-nowrap ${
               isMeeting
                 ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
                 : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20'
