@@ -73,6 +73,15 @@ export default function App() {
 
   useEffect(() => {
     loadAllData();
+
+    // Real-time Firestore sync listener across all browsers & devices
+    const unsubscribe = api.subscribeToReservations((realtimeReservations) => {
+      setReservations(realtimeReservations);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [loadAllData]);
 
   // Navigation handlers

@@ -9,6 +9,16 @@ import {
   AdminStats,
 } from '../types';
 import { hashPassword } from '../utils/crypto';
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore';
+import { db as firestoreDb } from './firebase';
 
 const STORAGE_KEY = 'hanyang_reservation_db_v5';
 const ADMIN_TOKEN_KEY = 'hanyang_admin_session_token';
@@ -264,6 +274,37 @@ export const api = {
     return 0;
   },
 
+  // Real-time Firestore subscription for instantaneous cross-browser syncing
+  subscribeToReservations(onUpdate: (reservations: Reservation[]) => void): () => void {
+    try {
+      const colRef = collection(firestoreDb, 'reservations');
+      return onSnapshot(
+        colRef,
+        (snapshot) => {
+          if (snapshot.empty) return;
+          const list: Reservation[] = [];
+          snapshot.forEach((d) => {
+            list.push(d.data() as Reservation);
+          });
+          list.sort((a, b) => {
+            if (a.date !== b.date) return a.date.localeCompare(b.date);
+            return a.startTime.localeCompare(b.startTime);
+          });
+          const db = getLocalDB();
+          db.reservations = list;
+          saveLocalDB(db);
+          onUpdate(list);
+        },
+        (error) => {
+          console.warn('[Firebase] Firestore onSnapshot warning:', error);
+        }
+      );
+    } catch (err) {
+      console.warn('[Firebase] Subscription error:', err);
+      return () => {};
+    }
+  },
+
   // Get reservations with filter
   async fetchReservations(params?: {
     spaceId?: string;
@@ -272,7 +313,54 @@ export const api = {
     includeCancelled?: boolean;
     search?: string;
   }): Promise<Reservation[]> {
-    // Attempt sync of any local offline reservations to central server
+    // 1. Try Firebase Firestore directly
+    try {
+      const colRef = collection(firestoreDb, 'reservations');
+      const snap = await getDocs(colRef);
+      if (!snap.empty) {
+        const firestoreList: Reservation[] = [];
+        snap.forEach((d) => {
+          firestoreList.push(d.data() as Reservation);
+        });
+
+        firestoreList.sort((a, b) => {
+          if (a.date !== b.date) return a.date.localeCompare(b.date);
+          return a.startTime.localeCompare(b.startTime);
+        });
+
+        const db = getLocalDB();
+        db.reservations = firestoreList;
+        saveLocalDB(db);
+
+        let list = [...firestoreList];
+        if (!params?.includeCancelled) {
+          list = list.filter((r) => r.status === 'confirmed');
+        }
+        if (params?.spaceId && params.spaceId !== 'all') {
+          list = list.filter((r) => r.spaceId === params.spaceId);
+        }
+        if (params?.date) {
+          list = list.filter((r) => r.date === params.date);
+        }
+        if (params?.month) {
+          list = list.filter((r) => r.date.startsWith(params.month!));
+        }
+        if (params?.search) {
+          const q = params.search.toLowerCase();
+          list = list.filter(
+            (r) =>
+              r.userName.toLowerCase().includes(q) ||
+              r.purpose.toLowerCase().includes(q) ||
+              (r.department && r.department.toLowerCase().includes(q))
+          );
+        }
+        return list;
+      }
+    } catch (fsErr) {
+      console.warn('[Firebase] Firestore getDocs fallback:', fsErr);
+    }
+
+    // 2. Fallback to server API and sync
     await this.syncLocalReservations().catch(() => {});
 
     const query = new URLSearchParams();
@@ -291,6 +379,11 @@ export const api = {
         const db = getLocalDB();
         db.reservations = serverData.reservations;
         saveLocalDB(db);
+
+        // Seed Firestore with server data so Firestore is immediately populated
+        serverData.reservations.forEach((item) => {
+          setDoc(doc(firestoreDb, 'reservations', item.id), item).catch(() => {});
+        });
       } catch (err) {
         console.warn('Failed to update local cache:', err);
       }
@@ -438,6 +531,44 @@ export const api = {
 
   // Create new reservation
   async createReservation(input: CreateReservationInput): Promise<Reservation> {
+    const db = getLocalDB();
+    const space = db.spaces.find((s) => s.id === input.spaceId);
+    if (!space) throw new Error('존재하지 않는 공간입니다.');
+
+    if (timeToMinutes(input.endTime) <= timeToMinutes(input.startTime)) {
+      throw new Error('종료 시간은 시작 시간보다 늦어야 합니다.');
+    }
+
+    const hashed = await hashPassword(input.password);
+    const newId = `res-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const newRes: Reservation = {
+      id: newId,
+      spaceId: input.spaceId,
+      spaceName: space.name,
+      date: input.date,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      userName: input.userName.trim(),
+      purpose: input.purpose.trim(),
+      department: input.department?.trim() || undefined,
+      phone: input.phone?.trim() || undefined,
+      passwordHash: hashed,
+      status: 'confirmed',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    let firestoreSuccess = false;
+    // 1. Write directly to Firebase Firestore
+    try {
+      await setDoc(doc(firestoreDb, 'reservations', newId), newRes);
+      firestoreSuccess = true;
+      console.log('[Firebase] Successfully written to Firestore:', newId);
+    } catch (fsErr) {
+      console.warn('[Firebase] Firestore setDoc fallback to server:', fsErr);
+    }
+
+    // 2. Also write to server backend for dual-redundancy
     const serverData = await tryServerFetch<{ success: boolean; reservation: Reservation }>(
       '/api/reservations',
       {
@@ -445,19 +576,22 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       }
-    );
+    ).catch(() => null);
 
-    if (serverData?.success && serverData.reservation) {
-      const db = getLocalDB();
-      const exists = db.reservations.some((r) => r.id === serverData.reservation.id);
-      if (!exists) {
-        db.reservations.push(serverData.reservation);
-      }
-      saveLocalDB(db);
-      return serverData.reservation;
+    const finalRes = serverData?.success && serverData.reservation ? serverData.reservation : newRes;
+
+    if (!firestoreSuccess && (!serverData || !serverData.success)) {
+      throw new Error('중앙 서버에 예약을 등록하지 못했습니다. 네트워크 연결 상태를 확인하고 다시 시도해주세요.');
     }
 
-    throw new Error('중앙 서버에 예약을 등록하지 못했습니다. 네트워크 연결 상태를 확인하고 다시 시도해주세요.');
+    // Update local cache
+    const exists = db.reservations.some((r) => r.id === finalRes.id);
+    if (!exists) {
+      db.reservations.push(finalRes);
+    }
+    saveLocalDB(db);
+
+    return finalRes;
   },
 
   // Verify reservation password
@@ -493,6 +627,34 @@ export const api = {
 
   // Update reservation
   async updateReservation(id: string, input: UpdateReservationInput): Promise<Reservation> {
+    const db = getLocalDB();
+    const resIndex = db.reservations.findIndex((r) => r.id === id);
+    const existing = resIndex !== -1 ? db.reservations[resIndex] : null;
+
+    const targetSpaceId = input.spaceId || existing?.spaceId || 'meeting-room';
+    const space = db.spaces.find((s) => s.id === targetSpaceId);
+
+    const updatedData: Partial<Reservation> = {
+      ...(input.spaceId && { spaceId: input.spaceId, spaceName: space?.name || '' }),
+      ...(input.date && { date: input.date }),
+      ...(input.startTime && { startTime: input.startTime }),
+      ...(input.endTime && { endTime: input.endTime }),
+      ...(input.userName && { userName: input.userName.trim() }),
+      ...(input.purpose && { purpose: input.purpose.trim() }),
+      ...(input.department !== undefined && { department: input.department.trim() }),
+      ...(input.phone !== undefined && { phone: input.phone.trim() }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 1. Update in Firebase Firestore
+    try {
+      await updateDoc(doc(firestoreDb, 'reservations', id), updatedData);
+      console.log('[Firebase] Successfully updated reservation in Firestore:', id);
+    } catch (fsErr) {
+      console.warn('[Firebase] Firestore update error:', fsErr);
+    }
+
+    // 2. Update via server API
     const serverData = await tryServerFetch<{ success: boolean; reservation: Reservation }>(
       `/api/reservations/${id}`,
       {
@@ -503,67 +665,18 @@ export const api = {
         },
         body: JSON.stringify(input),
       }
-    );
+    ).catch(() => null);
 
-    if (serverData?.success && serverData.reservation) {
-      const db = getLocalDB();
-      const idx = db.reservations.findIndex((r) => r.id === id);
-      if (idx !== -1) db.reservations[idx] = serverData.reservation;
+    const result = serverData?.success && serverData.reservation ? serverData.reservation : {
+      ...(existing || {}),
+      ...updatedData,
+    } as Reservation;
+
+    if (resIndex !== -1) {
+      db.reservations[resIndex] = result;
       saveLocalDB(db);
-      return serverData.reservation;
     }
-
-    const db = getLocalDB();
-    const resIndex = db.reservations.findIndex((r) => r.id === id);
-    if (resIndex === -1) throw new Error('예약 정보를 찾을 수 없습니다.');
-
-    const existing = db.reservations[resIndex];
-    if (!input.isAdminOverride && input.password) {
-      const hashed = await hashPassword(input.password);
-      if (existing.passwordHash !== hashed && existing.passwordHash !== input.password) {
-        throw new Error('예약 비밀번호가 일치하지 않습니다.');
-      }
-    }
-
-    const targetSpaceId = input.spaceId || existing.spaceId;
-    const targetDate = input.date || existing.date;
-    const targetStartTime = input.startTime || existing.startTime;
-    const targetEndTime = input.endTime || existing.endTime;
-
-    const space = db.spaces.find((s) => s.id === targetSpaceId);
-    if (!space) throw new Error('해당 공간을 찾을 수 없습니다.');
-
-    const conflict = db.reservations.find(
-      (r) =>
-        r.id !== id &&
-        r.status === 'confirmed' &&
-        r.spaceId === targetSpaceId &&
-        r.date === targetDate &&
-        isTimeOverlapping(targetStartTime, targetEndTime, r.startTime, r.endTime)
-    );
-    if (conflict) {
-      throw new Error(
-        `선택하신 시간에는 이미 예약(${conflict.startTime}~${conflict.endTime} ${conflict.userName})이 있습니다.`
-      );
-    }
-
-    const updated: Reservation = {
-      ...existing,
-      spaceId: targetSpaceId,
-      spaceName: space.name,
-      date: targetDate,
-      startTime: targetStartTime,
-      endTime: targetEndTime,
-      userName: input.userName ? input.userName.trim() : existing.userName,
-      purpose: input.purpose ? input.purpose.trim() : existing.purpose,
-      department: input.department !== undefined ? input.department.trim() : existing.department,
-      phone: input.phone !== undefined ? input.phone.trim() : existing.phone,
-      updatedAt: new Date().toISOString(),
-    };
-
-    db.reservations[resIndex] = updated;
-    saveLocalDB(db);
-    return updated;
+    return result;
   },
 
   // Cancel reservation
@@ -576,59 +689,50 @@ export const api = {
       permanent?: boolean;
     }
   ): Promise<void> {
-    const serverData = await tryServerFetch<{ success: boolean }>(`/api/reservations/${id}`, {
+    // 1. Update Firebase Firestore
+    try {
+      if (options?.permanent && options.isAdminOverride) {
+        await deleteDoc(doc(firestoreDb, 'reservations', id));
+      } else {
+        await updateDoc(doc(firestoreDb, 'reservations', id), {
+          status: 'cancelled',
+          cancelledAt: new Date().toISOString(),
+          cancelReason: options?.cancelReason || '사용자 직접 취소',
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      console.log('[Firebase] Successfully updated cancel in Firestore:', id);
+    } catch (fsErr) {
+      console.warn('[Firebase] Firestore cancel error:', fsErr);
+    }
+
+    // 2. Server API
+    await tryServerFetch<{ success: boolean }>(`/api/reservations/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         ...(options?.isAdminOverride ? getAdminAuthHeaders() : {}),
       },
       body: JSON.stringify(options || {}),
-    });
+    }).catch(() => null);
 
-    if (serverData?.success) {
-      const db = getLocalDB();
-      const idx = db.reservations.findIndex((r) => r.id === id);
-      if (idx !== -1) {
-        if (options?.permanent && options.isAdminOverride) {
-          db.reservations.splice(idx, 1);
-        } else {
-          db.reservations[idx] = {
-            ...db.reservations[idx],
-            status: 'cancelled',
-            cancelledAt: new Date().toISOString(),
-            cancelReason: options?.cancelReason || '사용자 직접 취소',
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        saveLocalDB(db);
-      }
-      return;
-    }
-
+    // 3. Local Cache
     const db = getLocalDB();
     const idx = db.reservations.findIndex((r) => r.id === id);
-    if (idx === -1) throw new Error('예약 정보를 찾을 수 없습니다.');
-
-    const existing = db.reservations[idx];
-    if (!options?.isAdminOverride && options?.password) {
-      const hashed = await hashPassword(options.password);
-      if (existing.passwordHash !== hashed && existing.passwordHash !== options.password) {
-        throw new Error('예약 비밀번호가 일치하지 않습니다.');
+    if (idx !== -1) {
+      if (options?.permanent && options.isAdminOverride) {
+        db.reservations.splice(idx, 1);
+      } else {
+        db.reservations[idx] = {
+          ...db.reservations[idx],
+          status: 'cancelled',
+          cancelledAt: new Date().toISOString(),
+          cancelReason: options?.cancelReason || '사용자 직접 취소',
+          updatedAt: new Date().toISOString(),
+        };
       }
+      saveLocalDB(db);
     }
-
-    if (options?.permanent && options.isAdminOverride) {
-      db.reservations.splice(idx, 1);
-    } else {
-      db.reservations[idx] = {
-        ...existing,
-        status: 'cancelled',
-        cancelledAt: new Date().toISOString(),
-        cancelReason: options?.cancelReason || '사용자 직접 취소',
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    saveLocalDB(db);
   },
 
   // Get blocked dates

@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "Reservation": {
+      "title": "Reservation",
+      "description": "A booking for a school facility (meeting room or audiovisual room)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "spaceId": { "type": "string" },
+        "spaceName": { "type": "string" },
+        "date": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "userName": { "type": "string" },
+        "purpose": { "type": "string" },
+        "department": { "type": "string" },
+        "phone": { "type": "string" },
+        "passwordHash": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "cancelledAt": { "type": "string" },
+        "cancelReason": { "type": "string" }
+      },
+      "required": ["spaceId", "date", "startTime", "endTime", "userName", "purpose", "passwordHash", "status"]
+    },
+    "BlockedDate": {
+      "title": "BlockedDate",
+      "description": "A date blocked for reservations due to holiday or facility maintenance",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "spaceId": { "type": "string" },
+        "reason": { "type": "string" },
+        "type": { "type": "string", "enum": ["holiday", "blocked"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["date", "spaceId", "reason"]
+    },
+    "Space": {
+      "title": "Space",
+      "description": "School facility metadata and operating hours",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "description": { "type": "string" },
+        "capacity": { "type": "string" },
+        "equipment": { "type": "array" },
+        "openTime": { "type": "string" },
+        "closeTime": { "type": "string" },
+        "slotDurationMinutes": { "type": "number" },
+        "location": { "type": "string" },
+        "themeColor": { "type": "string" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "name", "openTime", "closeTime"]
+    }
+  },
+  "firestore": {
+    "/reservations/{reservationId}": {
+      "schema": "Reservation",
+      "description": "Collection of facility reservation documents"
+    },
+    "/blockedDates/{blockedDateId}": {
+      "schema": "BlockedDate",
+      "description": "Collection of dates blocked by administrator"
+    },
+    "/spaces/{spaceId}": {
+      "schema": "Space",
+      "description": "Facility details and operating schedules"
+    }
+  }
+}
