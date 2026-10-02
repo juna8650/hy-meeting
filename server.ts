@@ -851,6 +851,62 @@ app.post('/api/reservations', (req, res) => {
   }
 });
 
+// 9-1. Sync Offline / Local Reservations to Server
+app.post('/api/reservations/sync', (req, res) => {
+  try {
+    const { reservations: localList } = req.body;
+    if (!Array.isArray(localList) || localList.length === 0) {
+      return res.json({ success: true, syncedCount: 0 });
+    }
+
+    const db = getDatabase();
+    let syncedCount = 0;
+
+    for (const item of localList) {
+      if (!item || !item.id || !item.spaceId || !item.date || !item.startTime || !item.endTime) continue;
+      // Skip if already in server DB
+      if (db.reservations.some((r) => r.id === item.id)) continue;
+
+      // Check conflict with existing server reservations
+      const hasConflict = db.reservations.some(
+        (r) =>
+          r.status === 'confirmed' &&
+          r.spaceId === item.spaceId &&
+          r.date === item.date &&
+          isTimeOverlapping(item.startTime, item.endTime, r.startTime, r.endTime)
+      );
+
+      if (!hasConflict) {
+        db.reservations.push({
+          id: item.id,
+          spaceId: item.spaceId,
+          spaceName: item.spaceName || (item.spaceId === 'meeting-room' ? '회의실' : '시청각실'),
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          userName: sanitizeText(item.userName, 30),
+          purpose: sanitizeText(item.purpose, 200),
+          department: item.department ? sanitizeText(item.department, 50) : undefined,
+          phone: item.phone ? sanitizeText(item.phone, 30) : undefined,
+          passwordHash: item.passwordHash || hashPassword('1234'),
+          status: item.status || 'confirmed',
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: item.updatedAt || new Date().toISOString(),
+        });
+        syncedCount++;
+      }
+    }
+
+    if (syncedCount > 0) {
+      saveDatabase(db);
+    }
+
+    res.json({ success: true, syncedCount });
+  } catch (err) {
+    res.status(500).json({ success: false, message: '예약 동기화 중 오류가 발생했습니다.' });
+  }
+});
+
 // 10. Verify Reservation Password (With Brute-Force Rate Limiting)
 app.post('/api/reservations/:id/verify-password', (req, res) => {
   const { id } = req.params;

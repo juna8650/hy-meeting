@@ -233,6 +233,30 @@ export const api = {
     );
 
     if (serverData?.success && Array.isArray(serverData.reservations)) {
+      // Auto-sync: Check if local browser storage has any offline/fallback reservations missing on the server
+      try {
+        const db = getLocalDB();
+        const serverIds = new Set(serverData.reservations.map((r) => r.id));
+        const localOnlyConfirmed = db.reservations.filter(
+          (localRes) => localRes.status === 'confirmed' && !serverIds.has(localRes.id)
+        );
+
+        if (localOnlyConfirmed.length > 0) {
+          // Asynchronously push local-only reservations to server database
+          tryServerFetch('/api/reservations/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reservations: localOnlyConfirmed }),
+          }).catch(() => {});
+        }
+
+        // Keep local cache synchronized with authoritative server data
+        db.reservations = serverData.reservations;
+        saveLocalDB(db);
+      } catch (syncErr) {
+        console.warn('Sync check warning:', syncErr);
+      }
+
       return serverData.reservations;
     }
 
