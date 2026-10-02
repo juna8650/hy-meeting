@@ -138,9 +138,13 @@ function isTimeOverlapping(start1: string, end1: string, start2: string, end2: s
 // Safe network request helper that detects non-JSON or offline responses
 async function tryServerFetch<T>(url: string, options?: RequestInit): Promise<T | null> {
   try {
-    const res = await fetch(url, options);
+    const res = await fetch(url, {
+      ...options,
+      credentials: 'include',
+    });
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
+      console.warn(`[API] Server returned non-JSON response: ${contentType} for ${url} (status: ${res.status})`);
       return null;
     }
     const data = await res.json();
@@ -155,6 +159,7 @@ async function tryServerFetch<T>(url: string, options?: RequestInit): Promise<T 
     if (err.message && !err.message.includes('JSON') && !err.message.includes('fetch')) {
       throw err;
     }
+    console.warn(`[API fetch error] ${url}:`, err.message);
     return null;
   }
 }
@@ -213,6 +218,52 @@ export const api = {
     return db.spaces[idx];
   },
 
+  // Synchronize any local offline reservations to central server
+  async syncLocalReservations(): Promise<number> {
+    try {
+      const db = getLocalDB();
+      if (!db.reservations || db.reservations.length === 0) return 0;
+
+      const serverRes = await tryServerFetch<{ success: boolean; reservations: Reservation[] }>(
+        '/api/reservations?includeCancelled=true'
+      );
+      if (!serverRes?.success || !Array.isArray(serverRes.reservations)) return 0;
+
+      const serverIds = new Set(serverRes.reservations.map((r) => r.id));
+      const localOnly = db.reservations.filter((r) => {
+        if (r.status !== 'confirmed') return false;
+        if (serverIds.has(r.id)) return false;
+        // Check if matching slot is already registered on server
+        const slotExists = serverRes.reservations.some(
+          (sr) =>
+            sr.spaceId === r.spaceId &&
+            sr.date === r.date &&
+            sr.startTime === r.startTime &&
+            sr.status === 'confirmed'
+        );
+        return !slotExists;
+      });
+
+      if (localOnly.length > 0) {
+        const syncResult = await tryServerFetch<{ success: boolean; syncedCount: number }>(
+          '/api/reservations/sync',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reservations: localOnly }),
+          }
+        );
+        if (syncResult?.success && syncResult.syncedCount > 0) {
+          console.log(`[Sync] ${syncResult.syncedCount}건의 예약이 중앙 서버로 성공적으로 전송되었습니다.`);
+          return syncResult.syncedCount;
+        }
+      }
+    } catch (e) {
+      console.warn('Sync error:', e);
+    }
+    return 0;
+  },
+
   // Get reservations with filter
   async fetchReservations(params?: {
     spaceId?: string;
@@ -221,6 +272,9 @@ export const api = {
     includeCancelled?: boolean;
     search?: string;
   }): Promise<Reservation[]> {
+    // Attempt sync of any local offline reservations to central server
+    await this.syncLocalReservations().catch(() => {});
+
     const query = new URLSearchParams();
     if (params?.spaceId) query.append('spaceId', params.spaceId);
     if (params?.date) query.append('date', params.date);
@@ -233,34 +287,17 @@ export const api = {
     );
 
     if (serverData?.success && Array.isArray(serverData.reservations)) {
-      // Auto-sync: Check if local browser storage has any offline/fallback reservations missing on the server
       try {
         const db = getLocalDB();
-        const serverIds = new Set(serverData.reservations.map((r) => r.id));
-        const localOnlyConfirmed = db.reservations.filter(
-          (localRes) => localRes.status === 'confirmed' && !serverIds.has(localRes.id)
-        );
-
-        if (localOnlyConfirmed.length > 0) {
-          // Asynchronously push local-only reservations to server database
-          tryServerFetch('/api/reservations/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reservations: localOnlyConfirmed }),
-          }).catch(() => {});
-        }
-
-        // Keep local cache synchronized with authoritative server data
         db.reservations = serverData.reservations;
         saveLocalDB(db);
-      } catch (syncErr) {
-        console.warn('Sync check warning:', syncErr);
+      } catch (err) {
+        console.warn('Failed to update local cache:', err);
       }
-
       return serverData.reservations;
     }
 
-    // Local fallback
+    // Local fallback if server unreachable
     const db = getLocalDB();
     let list = [...db.reservations];
 
@@ -412,54 +449,15 @@ export const api = {
 
     if (serverData?.success && serverData.reservation) {
       const db = getLocalDB();
-      db.reservations.push(serverData.reservation);
+      const exists = db.reservations.some((r) => r.id === serverData.reservation.id);
+      if (!exists) {
+        db.reservations.push(serverData.reservation);
+      }
       saveLocalDB(db);
       return serverData.reservation;
     }
 
-    // Local reservation creation
-    const db = getLocalDB();
-    const space = db.spaces.find((s) => s.id === input.spaceId);
-    if (!space) throw new Error('존재하지 않는 공간입니다.');
-
-    if (timeToMinutes(input.endTime) <= timeToMinutes(input.startTime)) {
-      throw new Error('종료 시간은 시작 시간보다 늦어야 합니다.');
-    }
-
-    const conflict = db.reservations.find(
-      (r) =>
-        r.status === 'confirmed' &&
-        r.spaceId === input.spaceId &&
-        r.date === input.date &&
-        isTimeOverlapping(input.startTime, input.endTime, r.startTime, r.endTime)
-    );
-    if (conflict) {
-      throw new Error(
-        `선택하신 시간에는 이미 예약(${conflict.startTime}~${conflict.endTime} ${conflict.userName})이 있습니다.`
-      );
-    }
-
-    const hashed = await hashPassword(input.password);
-    const newRes: Reservation = {
-      id: `res-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      spaceId: input.spaceId,
-      spaceName: space.name,
-      date: input.date,
-      startTime: input.startTime,
-      endTime: input.endTime,
-      userName: input.userName.trim(),
-      purpose: input.purpose.trim(),
-      department: input.department?.trim() || undefined,
-      phone: input.phone?.trim() || undefined,
-      passwordHash: hashed,
-      status: 'confirmed',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    db.reservations.push(newRes);
-    saveLocalDB(db);
-    return newRes;
+    throw new Error('중앙 서버에 예약을 등록하지 못했습니다. 네트워크 연결 상태를 확인하고 다시 시도해주세요.');
   },
 
   // Verify reservation password
