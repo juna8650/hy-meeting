@@ -148,10 +148,7 @@ function isTimeOverlapping(start1: string, end1: string, start2: string, end2: s
 // Safe network request helper that detects non-JSON or offline responses
 async function tryServerFetch<T>(url: string, options?: RequestInit): Promise<T | null> {
   try {
-    const res = await fetch(url, {
-      ...options,
-      credentials: 'include',
-    });
+    const res = await fetch(url, options);
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
       console.warn(`[API] Server returned non-JSON response: ${contentType} for ${url} (status: ${res.status})`);
@@ -187,14 +184,37 @@ export const api = {
 
   // Get all spaces
   async fetchSpaces(): Promise<Space[]> {
+    const sortSpaces = (list: Space[]) =>
+      [...list].sort((a, b) => {
+        if (a.id === 'meeting-room') return -1;
+        if (b.id === 'meeting-room') return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'spaces'));
+      if (!snap.empty) {
+        const firestoreSpaces: Space[] = [];
+        snap.forEach((d) => firestoreSpaces.push(d.data() as Space));
+        const sorted = sortSpaces(firestoreSpaces);
+        const db = getLocalDB();
+        db.spaces = sorted;
+        saveLocalDB(db);
+        return sorted;
+      }
+    } catch (fsErr) {
+      console.warn('[Firebase] Spaces fetch fallback:', fsErr);
+    }
+
     const serverData = await tryServerFetch<{ success: boolean; spaces: Space[] }>('/api/spaces');
     if (serverData?.success && serverData.spaces?.length) {
+      const sorted = sortSpaces(serverData.spaces);
       const db = getLocalDB();
-      db.spaces = serverData.spaces;
+      db.spaces = sorted;
       saveLocalDB(db);
-      return serverData.spaces;
+      return sorted;
     }
-    return getLocalDB().spaces;
+    return sortSpaces(getLocalDB().spaces);
   },
 
   // Update space config (Admin)
@@ -281,7 +301,6 @@ export const api = {
       return onSnapshot(
         colRef,
         (snapshot) => {
-          if (snapshot.empty) return;
           const list: Reservation[] = [];
           snapshot.forEach((d) => {
             list.push(d.data() as Reservation);
@@ -550,16 +569,21 @@ export const api = {
       endTime: input.endTime,
       userName: input.userName.trim(),
       purpose: input.purpose.trim(),
-      department: input.department?.trim() || undefined,
-      phone: input.phone?.trim() || undefined,
       passwordHash: hashed,
       status: 'confirmed',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
+    if (input.department && input.department.trim()) {
+      newRes.department = input.department.trim();
+    }
+    if (input.phone && input.phone.trim()) {
+      newRes.phone = input.phone.trim();
+    }
+
     let firestoreSuccess = false;
-    // 1. Write directly to Firebase Firestore
+    // 1. Write directly to Firebase Firestore (Global sync across all browsers & devices)
     try {
       await setDoc(doc(firestoreDb, 'reservations', newId), newRes);
       firestoreSuccess = true;
@@ -568,20 +592,29 @@ export const api = {
       console.warn('[Firebase] Firestore setDoc fallback to server:', fsErr);
     }
 
-    // 2. Also write to server backend for dual-redundancy
-    const serverData = await tryServerFetch<{ success: boolean; reservation: Reservation }>(
-      '/api/reservations',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+    // 2. Also write to server backend for dual-redundancy if available
+    let serverRes: Reservation | null = null;
+    try {
+      const serverData = await tryServerFetch<{ success: boolean; reservation: Reservation }>(
+        '/api/reservations',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }
+      );
+      if (serverData?.success && serverData.reservation) {
+        serverRes = serverData.reservation;
       }
-    ).catch(() => null);
+    } catch (sErr) {
+      console.warn('[API] Server create fallback:', sErr);
+    }
 
-    const finalRes = serverData?.success && serverData.reservation ? serverData.reservation : newRes;
+    const finalRes = serverRes || newRes;
 
-    if (!firestoreSuccess && (!serverData || !serverData.success)) {
-      throw new Error('중앙 서버에 예약을 등록하지 못했습니다. 네트워크 연결 상태를 확인하고 다시 시도해주세요.');
+    // If both failed and we are completely offline
+    if (!firestoreSuccess && !serverRes) {
+      console.warn('[Reservation] Both Firestore and Server unavailable, saved locally');
     }
 
     // Update local cache
@@ -641,8 +674,8 @@ export const api = {
       ...(input.endTime && { endTime: input.endTime }),
       ...(input.userName && { userName: input.userName.trim() }),
       ...(input.purpose && { purpose: input.purpose.trim() }),
-      ...(input.department !== undefined && { department: input.department.trim() }),
-      ...(input.phone !== undefined && { phone: input.phone.trim() }),
+      ...(input.department !== undefined && input.department.trim() ? { department: input.department.trim() } : {}),
+      ...(input.phone !== undefined && input.phone.trim() ? { phone: input.phone.trim() } : {}),
       updatedAt: new Date().toISOString(),
     };
 
@@ -737,6 +770,20 @@ export const api = {
 
   // Get blocked dates
   async fetchBlockedDates(): Promise<BlockedDate[]> {
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'blockedDates'));
+      if (!snap.empty) {
+        const firestoreBlocked: BlockedDate[] = [];
+        snap.forEach((d) => firestoreBlocked.push(d.data() as BlockedDate));
+        const db = getLocalDB();
+        db.blockedDates = firestoreBlocked;
+        saveLocalDB(db);
+        return firestoreBlocked;
+      }
+    } catch (fsErr) {
+      console.warn('[Firebase] BlockedDates fetch fallback:', fsErr);
+    }
+
     const serverData = await tryServerFetch<{ success: boolean; blockedDates: BlockedDate[] }>(
       '/api/blocked-dates'
     );
@@ -753,7 +800,25 @@ export const api = {
     reason: string,
     type?: 'holiday' | 'blocked'
   ): Promise<BlockedDate> {
-    const serverData = await tryServerFetch<{ success: boolean; blockedDate: BlockedDate }>(
+    const newBlocked: BlockedDate = {
+      id: `block-${Date.now()}`,
+      date,
+      spaceId: (spaceId as any) || 'all',
+      reason,
+      type: type || 'blocked',
+      createdAt: new Date().toISOString(),
+    };
+
+    // 1. Save to Firebase Firestore
+    try {
+      await setDoc(doc(firestoreDb, 'blockedDates', newBlocked.id), newBlocked);
+      console.log('[Firebase] Successfully created blocked date in Firestore:', newBlocked.id);
+    } catch (fsErr) {
+      console.warn('[Firebase] BlockedDate setDoc error:', fsErr);
+    }
+
+    // 2. Dual-save to server if available
+    await tryServerFetch<{ success: boolean; blockedDate: BlockedDate }>(
       '/api/blocked-dates',
       {
         method: 'POST',
@@ -763,24 +828,9 @@ export const api = {
         },
         body: JSON.stringify({ date, spaceId, reason, type }),
       }
-    );
-
-    if (serverData?.success && serverData.blockedDate) {
-      const db = getLocalDB();
-      db.blockedDates.push(serverData.blockedDate);
-      saveLocalDB(db);
-      return serverData.blockedDate;
-    }
+    ).catch(() => null);
 
     const db = getLocalDB();
-    const newBlocked: BlockedDate = {
-      id: `block-${Date.now()}`,
-      date,
-      spaceId: (spaceId as any) || 'all',
-      reason,
-      type: type || 'blocked',
-      createdAt: new Date().toISOString(),
-    };
     db.blockedDates.push(newBlocked);
     saveLocalDB(db);
     return newBlocked;
@@ -788,12 +838,21 @@ export const api = {
 
   // Delete blocked date
   async deleteBlockedDate(id: string): Promise<void> {
+    // 1. Delete from Firebase Firestore
+    try {
+      await deleteDoc(doc(firestoreDb, 'blockedDates', id));
+      console.log('[Firebase] Successfully deleted blocked date from Firestore:', id);
+    } catch (fsErr) {
+      console.warn('[Firebase] BlockedDate delete error:', fsErr);
+    }
+
+    // 2. Dual-delete from server if available
     await tryServerFetch<{ success: boolean }>(`/api/blocked-dates/${id}`, {
       method: 'DELETE',
       headers: {
         ...getAdminAuthHeaders(),
       },
-    });
+    }).catch(() => null);
 
     const db = getLocalDB();
     db.blockedDates = db.blockedDates.filter((b) => b.id !== id);

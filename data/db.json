@@ -72,6 +72,21 @@
       "status": "confirmed",
       "createdAt": "2026-08-29T12:21:17.408Z",
       "updatedAt": "2026-08-29T12:21:17.408Z"
+    },
+    {
+      "id": "res-1790901628676-d34c9b",
+      "spaceId": "meeting-room",
+      "spaceName": "회의실",
+      "date": "2026-10-02",
+      "startTime": "14:00",
+      "endTime": "15:00",
+      "userName": "홍길동",
+      "purpose": "부서 회의",
+      "department": "교무기획부",
+      "passwordHash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "status": "confirmed",
+      "createdAt": "2026-10-02T00:40:28.676Z",
+      "updatedAt": "2026-10-02T00:40:28.676Z"
     }
   ],
   "blockedDates": [

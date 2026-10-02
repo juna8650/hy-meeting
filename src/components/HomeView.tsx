@@ -85,21 +85,27 @@ export default function HomeView({
           </p>
         </div>
 
-        {/* Space Cards Grid */}
+        {/* Space Cards Grid - 회의실(왼쪽), 시청각실(오른쪽) 순서 고정 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          {spaces.map((space) => {
-            const spaceToday = reservations.filter(
-              (r) => r.spaceId === space.id && r.date === todayStr && r.status === 'confirmed'
-            );
-            return (
-              <SpaceCard
-                key={space.id}
-                space={space}
-                todayReservations={spaceToday}
-                onSelect={() => onSelectSpace(space.id)}
-              />
-            );
-          })}
+          {[...spaces]
+            .sort((a, b) => {
+              if (a.id === 'meeting-room') return -1;
+              if (b.id === 'meeting-room') return 1;
+              return 0;
+            })
+            .map((space) => {
+              const spaceToday = reservations.filter(
+                (r) => r.spaceId === space.id && r.date === todayStr && r.status === 'confirmed'
+              );
+              return (
+                <SpaceCard
+                  key={space.id}
+                  space={space}
+                  todayReservations={spaceToday}
+                  onSelect={() => onSelectSpace(space.id)}
+                />
+              );
+            })}
         </div>
       </section>
 
